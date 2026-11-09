@@ -77,6 +77,19 @@ INT_TERMS = ("<b>Умови і ціна</b>\n\n"
 
 BTN_PAY = f"Оплатити {C.INTENSIVE_AMOUNT} грн"
 BTN_INSTALL = "Розтермінування на 3 місяці"
+PAY_CHOICE = (f"<b>Як вам зручніше оплатити?</b>\n\n"
+              f"<b>Одразу все:</b> <code>{C.INTENSIVE_AMOUNT} грн</code>\n"
+              f"<b>Розтермінування:</b> {len(C.INSTALL_PARTS)} платежі: <code>{C.INSTALL_PARTS[0]} грн</code> зараз, "
+              f"далі по <code>{C.INSTALL_PARTS[1]} грн</code> кожні {C.INSTALL_DAYS} днів\n\n"
+              "<i>Доступ до інтенсиву відкривається одразу після першої оплати в обох варіантах.</i>")
+BTN_PAY_FULL = f"Оплатити все: {C.INTENSIVE_AMOUNT} грн"
+BTN_PAY_PARTS = f"Розтермінування: {C.INSTALL_PARTS[0]} грн зараз"
+PART_LINK = ("Ось посилання на {n}-й платіж: <code>{amount} грн</code> 👇\n"
+             "Після оплати поверніться в цей чат, протягом хвилини я все підтверджу ❤")
+PART_PAID = "✅ {n}-й платіж отримано, дякую! Наступний, <code>{amount} грн</code>, я нагадаю через {days} днів ❤"
+PART_ALL_PAID = "✅ Останній платіж отримано, інтенсив повністю оплачено. Дякую ❤"
+PART_REMIND = ("Нагадую про {n}-й платіж за інтенсив «Здоровий кишківник»: <code>{amount} грн</code> ❤\n"
+               "Натисніть кнопку нижче, щоб оплатити.")
 BTN_QUESTION = "Є питання"
 BTN_MENU = "⬅️ Меню"
 BTN_BACK_INT = "⬅️ До інтенсиву"

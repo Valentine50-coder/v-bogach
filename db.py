@@ -61,3 +61,8 @@ def flag_get(k):
 def flag_set(k, v="1"):
     with conn() as c:
         c.execute("INSERT OR REPLACE INTO kv(k,v) VALUES(?,?)", (k, v))
+
+
+def kv_prefix(prefix):
+    with conn() as c:
+        return [(r["k"], r["v"]) for r in c.execute("SELECT k, v FROM kv WHERE k LIKE ?", (prefix + "%",))]

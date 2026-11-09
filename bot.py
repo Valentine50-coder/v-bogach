@@ -1,5 +1,6 @@
 """Агент Валентини Швець: воронка «Старт» і воронка «ХОЧУ» (інтенсив «Здоровий кишківник»)."""
 import asyncio
+import time
 import logging
 import os
 
@@ -157,10 +158,31 @@ async def paid_job(ctx):
         if kind == "test":
             await notify_admins(ctx, f"✅ Тестова оплата пройшла: {amount} {cur}. Автоплатіж працює, доступ нікому не відкрито.")
             return
-        await do_grant(ctx, uid)
         u = db.get_user(uid)
         name = (u["name"] if u else "") + (f" @{u['username']}" if u and u["username"] else "")
-        await notify_admins(ctx, f"✅ Оплата отримана: інтенсив, {amount} {cur}. {name} (ID {uid}). Доступ відкрито автоматично.")
+        total = len(C.INSTALL_PARTS)
+        if kind.startswith("int") and kind[3:].isdigit():
+            n = int(kind[3:])
+            if n == 1:
+                await do_grant(ctx, uid)
+            if n < total:
+                due = int(time.time()) + C.INSTALL_DAYS * 86400
+                db.flag_set(f"inst:{uid}", f"{n + 1}|{due}|0")
+                try:
+                    await ctx.bot.send_message(uid, T.PART_PAID.format(n=n, amount=C.INSTALL_PARTS[n], days=C.INSTALL_DAYS), parse_mode="HTML")
+                except Exception as e:
+                    log.warning("part paid %s: %s", uid, e)
+            else:
+                db.flag_set(f"inst:{uid}", "done")
+                try:
+                    await ctx.bot.send_message(uid, T.PART_ALL_PAID)
+                except Exception as e:
+                    log.warning("part done %s: %s", uid, e)
+            await notify_admins(ctx, f"✅ Платіж {n}/{total} розтермінування: {amount} {cur}. {name} (ID {uid})."
+                                     + (" Доступ відкрито автоматично." if n == 1 else ""))
+            return
+        await do_grant(ctx, uid)
+        await notify_admins(ctx, f"✅ Оплата отримана: інтенсив повністю, {amount} {cur}. {name} (ID {uid}). Доступ відкрито автоматично.")
     try:
         await wfp.poll(on_paid)
     except Exception as e:
@@ -168,15 +190,56 @@ async def paid_job(ctx):
 
 
 async def start_pay(ctx, u, chat):
+    """Вибір: оплатити все або розтермінування."""
     db.set_field(u.id, "asked_int", 1)
-    url = await wfp.create_invoice(u.id, "int", C.INTENSIVE_AMOUNT, "UAH", f"Інтенсив «{C.INTENSIVE_NAME}»")
+    await ctx.bot.send_message(chat, T.PAY_CHOICE, parse_mode="HTML", reply_markup=M([
+        [B(T.BTN_PAY_FULL, callback_data="payfull")],
+        [B(T.BTN_PAY_PARTS, callback_data="paypart:1")],
+        [B(T.BTN_MENU, callback_data="menu")]]))
+
+
+async def make_invoice(ctx, u, chat, kind, amount, name, text):
+    url = await wfp.create_invoice(u.id, kind, amount, "UAH", name)
     if url:
-        await ctx.bot.send_message(chat, T.PAY_LINK, reply_markup=M([[B("Оплатити", url=url)], [B(T.BTN_MENU, callback_data="menu")]]))
-        await notify_admins(ctx, f"💳 {who(u)} отримав(ла) посилання на оплату інтенсиву.")
+        await ctx.bot.send_message(chat, text, parse_mode="HTML",
+                                   reply_markup=M([[B("Оплатити", url=url)], [B(T.BTN_MENU, callback_data="menu")]]))
+        await notify_admins(ctx, f"💳 {who(u)} отримав(ла) посилання на оплату: {name}, {amount} грн.")
     else:
         await ctx.bot.send_message(chat, T.PAY_MANUAL)
-        await notify_admins(ctx, f"⚠️ Автооплата не спрацювала ({wfp.LAST_ERROR or 'причина невідома'}). Заявка на інтенсив: {who(u)}",
+        await notify_admins(ctx, f"⚠️ Автооплата не спрацювала ({wfp.LAST_ERROR or 'причина невідома'}). Заявка: {name}, {who(u)}",
                             M([[B("Відкрити доступ", callback_data=f"grant:{u.id}")]]))
+
+
+async def pay_full(ctx, u, chat):
+    await make_invoice(ctx, u, chat, "int", C.INTENSIVE_AMOUNT, f"Інтенсив «{C.INTENSIVE_NAME}»", T.PAY_LINK)
+
+
+async def pay_part(ctx, u, chat, n):
+    if not 1 <= n <= len(C.INSTALL_PARTS):
+        return
+    amount = C.INSTALL_PARTS[n - 1]
+    await make_invoice(ctx, u, chat, f"int{n}", amount, f"Інтенсив «{C.INTENSIVE_NAME}», платіж {n}/{len(C.INSTALL_PARTS)}",
+                       T.PART_LINK.format(n=n, amount=amount))
+
+
+async def install_job(ctx):
+    """Нагадування про наступні платежі розтермінування."""
+    now = int(time.time())
+    for k, v in db.kv_prefix("inst:"):
+        if not v or v == "done":
+            continue
+        n, due, sent = (v.split("|") + ["0"])[:3]
+        if int(due) > now or sent == "1":
+            continue
+        uid = int(k.split(":")[1])
+        n = int(n)
+        try:
+            await ctx.bot.send_message(uid, T.PART_REMIND.format(n=n, amount=C.INSTALL_PARTS[n - 1]), parse_mode="HTML",
+                                       reply_markup=M([[B(f"Оплатити {C.INSTALL_PARTS[n - 1]} грн", callback_data=f"paypart:{n}")]]))
+            db.flag_set(k, f"{n}|{due}|1")
+            await notify_admins(ctx, f"⏰ Нагадала про {n}-й платіж розтермінування: ID {uid}")
+        except Exception as e:
+            log.warning("install remind %s: %s", uid, e)
 
 
 # ---------- кнопки ----------
@@ -208,9 +271,11 @@ async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     elif data == "pay":
         await start_pay(ctx, u, chat)
     elif data == "install":
-        await ctx.bot.send_message(chat, T.INSTALL + (f"\n{C.AUTHOR_CONTACT}" if C.AUTHOR_CONTACT else ""))
-        await notify_admins(ctx, f"🗓 Хоче розтермінування на 3 місяці: {who(u)}",
-                            M([[B("Відкрити доступ", callback_data=f"grant:{u.id}")]]))
+        await start_pay(ctx, u, chat)
+    elif data == "payfull":
+        await pay_full(ctx, u, chat)
+    elif data.startswith("paypart:"):
+        await pay_part(ctx, u, chat, int(data.split(":")[1]))
     elif data == "ask":
         ctx.user_data["ask"] = True
         await ctx.bot.send_message(chat, T.QUESTION)
@@ -319,6 +384,7 @@ def main():
     app.add_handler(MessageHandler(filters.ChatType.PRIVATE & filters.TEXT & ~filters.COMMAND, on_text))
     app.add_error_handler(on_error)
     app.job_queue.run_repeating(paid_job, interval=60, first=45)
+    app.job_queue.run_repeating(install_job, interval=3600, first=120)
     log.info("Агента запущено")
     app.run_polling(allowed_updates=Update.ALL_TYPES)
 
