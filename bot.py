@@ -9,6 +9,7 @@ from telegram.ext import (Application, CallbackQueryHandler, ChatMemberHandler, 
                           MessageHandler, filters)
 
 import config as C
+import changelog
 import db
 import groups
 import texts as T
@@ -24,7 +25,8 @@ def is_admin(uid): return uid in C.ADMIN_IDS
 
 
 def kb_start():
-    rows = [[B(T.BTN_INTENSIVE, callback_data="int")]]
+    rows = [[B(T.BTN_INTENSIVE, callback_data="int")],
+            [B(T.BTN_ABOUT, callback_data="sec:author")]]
     rows += [[B(text, callback_data=f"soon:{code}")] for text, code in C.START_BUTTONS]
     return M(rows)
 
@@ -33,6 +35,26 @@ def kb_intensive():
     return M([[B(T.BTN_PAY, callback_data="pay")],
               [B(T.BTN_INSTALL, callback_data="install")],
               [B(T.BTN_QUESTION, callback_data="ask")],
+              [B(T.BTN_MENU, callback_data="menu")]])
+
+
+SECTIONS = {  # код: (назва кнопки, текст)
+    "author": ("Про авторку", "INT_AUTHOR"),
+    "for": ("Для кого", "INT_FOR"),
+    "program": ("Програма", "INT_PROGRAM"),
+    "get": ("Що ви отримаєте", "INT_GET"),
+    "terms": ("Умови і ціна", "INT_TERMS"),
+}
+
+
+def kb_int_menu():
+    s = [[B(name, callback_data=f"sec:{code}")] for code, (name, _) in SECTIONS.items()]
+    return M(s + [[B(T.BTN_PAY, callback_data="pay")], [B(T.BTN_MENU, callback_data="menu")]])
+
+
+def kb_section():
+    return M([[B(T.BTN_PAY, callback_data="pay")],
+              [B(T.BTN_BACK_INT, callback_data="int")],
               [B(T.BTN_MENU, callback_data="menu")]])
 
 
@@ -75,6 +97,13 @@ async def funnel_intensive(ctx, chat_id):
         await ctx.bot.send_message(chat_id, part, parse_mode="HTML")
     await asyncio.sleep(2)
     await ctx.bot.send_message(chat_id, T.INT_TERMS, reply_markup=kb_intensive(), parse_mode="HTML")
+
+
+async def intensive_card(ctx, chat_id):
+    """Картка інтенсиву як в Ані: фото, коротко, розділи кнопками."""
+    if not await send_photo(ctx, chat_id, "intensive.jpg", T.INT_1):
+        await ctx.bot.send_message(chat_id, T.INT_1, parse_mode="HTML")
+    await ctx.bot.send_message(chat_id, T.INT_MENU, reply_markup=kb_int_menu(), parse_mode="HTML")
 
 
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -140,7 +169,14 @@ async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     elif data == "menu":
         await ctx.bot.send_message(chat, T.START_2, reply_markup=kb_start(), parse_mode="HTML")
     elif data == "int":
-        await funnel_intensive(ctx, chat)
+        await intensive_card(ctx, chat)
+    elif data.startswith("sec:"):
+        code = data.split(":", 1)[1]
+        if code in SECTIONS:
+            text = getattr(T, SECTIONS[code][1])
+            if code == "author" and await send_photo(ctx, chat, "intensive.jpg"):
+                pass
+            await ctx.bot.send_message(chat, text, reply_markup=kb_section(), parse_mode="HTML")
     elif data.startswith("soon:"):
         await ctx.bot.send_message(chat, T.SOON, reply_markup=M([[B(T.BTN_INTENSIVE, callback_data="int")]]))
     elif data == "pay":
@@ -223,6 +259,7 @@ async def post_init(app):
             await app.bot.set_my_commands(admin_cmds, scope=BotCommandScopeChat(a))
         await app.bot.set_my_short_description(T.SHORT_DESC)
         await app.bot.set_my_description(T.DESC)
+        await changelog.send(app.bot)
         if not db.flag_get("hello_sent"):
             db.flag_set("hello_sent")
             for a in C.ADMIN_IDS:
