@@ -4,7 +4,7 @@ import logging
 import os
 
 from telegram import (BotCommand, BotCommandScopeChat, InlineKeyboardButton as B,
-                      InlineKeyboardMarkup as M, Update)
+                      InlineKeyboardMarkup as M, KeyboardButton, ReplyKeyboardMarkup, Update)
 from telegram.ext import (Application, CallbackQueryHandler, ChatMemberHandler, CommandHandler, ContextTypes,
                           MessageHandler, filters)
 
@@ -29,6 +29,12 @@ def kb_start():
             [B(T.BTN_ABOUT, callback_data="sec:author")]]
     rows += [[B(text, callback_data=f"soon:{code}")] for text, code in C.START_BUTTONS]
     return M(rows)
+
+
+def kb_bottom():
+    """Постійні кнопки під полем вводу."""
+    return ReplyKeyboardMarkup([[KeyboardButton(T.BTN_HOME), KeyboardButton(T.BTN_INT_SHORT)]],
+                               resize_keyboard=True, is_persistent=True)
 
 
 def kb_intensive():
@@ -58,11 +64,11 @@ def kb_section():
               [B(T.BTN_MENU, callback_data="menu")]])
 
 
-async def send_photo(ctx, chat_id, name, caption=None):
+async def send_photo(ctx, chat_id, name, caption=None, kb=None):
     path = os.path.join(IMG, name)
     if os.path.exists(path):
         with open(path, "rb") as f:
-            await ctx.bot.send_photo(chat_id, f, caption=caption, parse_mode="HTML")
+            await ctx.bot.send_photo(chat_id, f, caption=caption, parse_mode="HTML", reply_markup=kb)
         return True
     return False
 
@@ -81,15 +87,15 @@ def who(u):
 
 # ---------- воронки ----------
 async def funnel_start(ctx, chat_id):
-    if not await send_photo(ctx, chat_id, "start.jpg", T.START_1):
-        await ctx.bot.send_message(chat_id, T.START_1)
+    if not await send_photo(ctx, chat_id, "start.jpg", T.START_1, kb_bottom()):
+        await ctx.bot.send_message(chat_id, T.START_1, reply_markup=kb_bottom())
     await ctx.bot.send_chat_action(chat_id, "typing")
     await asyncio.sleep(5)
     await ctx.bot.send_message(chat_id, T.START_2, reply_markup=kb_start(), parse_mode="HTML")
 
 
 async def funnel_intensive(ctx, chat_id):
-    await ctx.bot.send_message(chat_id, T.INT_1, parse_mode="HTML")
+    await ctx.bot.send_message(chat_id, T.INT_1, parse_mode="HTML", reply_markup=kb_bottom())
     if not await send_photo(ctx, chat_id, "intensive.jpg", T.INT_AUTHOR):
         await ctx.bot.send_message(chat_id, T.INT_AUTHOR, parse_mode="HTML")
     for part in (T.INT_FOR, T.INT_PROGRAM, T.INT_GET):
@@ -121,6 +127,7 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_menu(update: Update, ctx):
+    await update.message.reply_text("Меню завжди тут, під полем вводу 👇", reply_markup=kb_bottom())
     await update.message.reply_text(T.START_2, reply_markup=kb_start(), parse_mode="HTML")
 
 
@@ -200,6 +207,15 @@ async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     u = update.effective_user
+    txt = update.message.text
+    if txt == T.BTN_HOME:
+        ctx.user_data.pop("ask", None)
+        await update.message.reply_text(T.START_2, reply_markup=kb_start(), parse_mode="HTML")
+        return
+    if txt == T.BTN_INT_SHORT:
+        ctx.user_data.pop("ask", None)
+        await intensive_card(ctx, update.effective_chat.id)
+        return
     if ctx.user_data.pop("ask", False):
         await notify_admins(ctx, f"❓ Питання від {who(u)}:\n\n{update.message.text}")
         await update.message.reply_text(T.QUESTION_OK)
