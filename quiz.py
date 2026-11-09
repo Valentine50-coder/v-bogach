@@ -140,7 +140,8 @@ async def on_cb(q, ctx, data, notify_admins, kb_offer):
         img, text = RES[z]
         await send_photo(ctx.bot, chat, img)
         await ctx.bot.send_message(chat, text, parse_mode="HTML")
-    await ctx.bot.send_message(chat, OFFER + "\n\n" + DISCLAIMER, reply_markup=kb_offer(), parse_mode="HTML")
+    import texts as T
+    await ctx.bot.send_message(chat, OFFER + T.URGENT + "\n\n" + DISCLAIMER, reply_markup=kb_offer(), parse_mode="HTML")
     u = q.from_user
     lines = [f"{k + 1}. {QUESTIONS[k][1][a][0]}" for k, a in enumerate(ans)]
     hot = " 🔥" if "ok" not in zones else ""

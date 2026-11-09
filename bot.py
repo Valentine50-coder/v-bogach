@@ -72,7 +72,7 @@ SECTIONS = {  # код: (назва кнопки, текст, картинка)
 async def show_section(ctx, chat_id, code):
     _, attr, img = SECTIONS[code]
     await send_photo(ctx, chat_id, img)
-    await ctx.bot.send_message(chat_id, getattr(T, attr), reply_markup=kb_section(), parse_mode="HTML")
+    await ctx.bot.send_message(chat_id, getattr(T, attr) + T.URGENT, reply_markup=kb_section(), parse_mode="HTML")
 
 
 def kb_int_menu():
@@ -132,21 +132,21 @@ async def funnel_intensive(ctx, chat_id):
         await asyncio.sleep(2)
         await ctx.bot.send_message(chat_id, part, parse_mode="HTML")
     await asyncio.sleep(2)
-    await ctx.bot.send_message(chat_id, T.INT_TERMS, reply_markup=kb_intensive(), parse_mode="HTML")
+    await ctx.bot.send_message(chat_id, T.INT_TERMS + T.URGENT, reply_markup=kb_intensive(), parse_mode="HTML")
 
 
 async def intensive_card(ctx, chat_id):
     """Картка інтенсиву як в Ані: фото, коротко, розділи кнопками."""
     await send_photo(ctx, chat_id, "card_launch.jpg")
     await ctx.bot.send_message(chat_id, T.INT_1, parse_mode="HTML", reply_markup=kb_bottom())
-    await ctx.bot.send_message(chat_id, T.INT_MENU, reply_markup=kb_int_menu(), parse_mode="HTML")
+    await ctx.bot.send_message(chat_id, T.INT_MENU + T.URGENT, reply_markup=kb_int_menu(), parse_mode="HTML")
 
 
 async def funnel_site(ctx, chat_id):
     """З сайту: людина вже все прочитала, тут коротко, оплата і питання до Валентини."""
     if not await send_photo(ctx, chat_id, "card_launch.jpg", T.SITE_HELLO, kb_bottom()):
         await ctx.bot.send_message(chat_id, T.SITE_HELLO, parse_mode="HTML", reply_markup=kb_bottom())
-    await ctx.bot.send_message(chat_id, T.SITE_OFFER, parse_mode="HTML", reply_markup=M([
+    await ctx.bot.send_message(chat_id, T.SITE_OFFER + T.URGENT, parse_mode="HTML", reply_markup=M([
         [B(T.BTN_GO_PAY, callback_data="pay")],
         [kb_ask()],
         [B("Ще раз про інтенсив", callback_data="int")]]))
@@ -228,7 +228,7 @@ async def paid_job(ctx):
 async def start_pay(ctx, u, chat):
     """Вибір: оплатити все або розтермінування."""
     db.set_field(u.id, "asked_int", 1)
-    await ctx.bot.send_message(chat, T.PAY_CHOICE, parse_mode="HTML", reply_markup=M([
+    await ctx.bot.send_message(chat, T.PAY_CHOICE + T.URGENT, parse_mode="HTML", reply_markup=M([
         [B(T.BTN_PAY_FULL, callback_data="payfull")],
         [B(T.BTN_PAY_PARTS, callback_data="paypart:1")],
         [B(T.BTN_MENU, callback_data="menu")]]))
