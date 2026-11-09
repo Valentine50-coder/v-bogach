@@ -32,9 +32,12 @@ def kb_start():
 
 
 def kb_bottom():
-    """Постійні кнопки під полем вводу."""
-    return ReplyKeyboardMarkup([[KeyboardButton(T.BTN_HOME), KeyboardButton(T.BTN_INT_SHORT)]],
+    """Постійне меню під полем вводу: усі розділи інтенсиву."""
+    return ReplyKeyboardMarkup([[KeyboardButton(t) for t, _ in row] for row in T.BTN_BOTTOM],
                                resize_keyboard=True, is_persistent=True)
+
+
+BOTTOM = {t: code for row in T.BTN_BOTTOM for t, code in row}
 
 
 def kb_intensive():
@@ -44,17 +47,24 @@ def kb_intensive():
               [B(T.BTN_MENU, callback_data="menu")]])
 
 
-SECTIONS = {  # код: (назва кнопки, текст)
-    "author": ("Про авторку", "INT_AUTHOR"),
-    "for": ("Для кого", "INT_FOR"),
-    "program": ("Програма", "INT_PROGRAM"),
-    "get": ("Що ви отримаєте", "INT_GET"),
-    "terms": ("Умови і ціна", "INT_TERMS"),
+SECTIONS = {  # код: (назва кнопки, текст, картинка)
+    "launch": ("Про запуск", "INT_1", "card_launch.jpg"),
+    "author": ("Про авторку", "INT_AUTHOR", "card_author.jpg"),
+    "for": ("Для кого", "INT_FOR", "card_for.jpg"),
+    "program": ("Програма", "INT_PROGRAM", "card_program.jpg"),
+    "get": ("Що ви отримаєте", "INT_GET", "card_get.jpg"),
+    "terms": ("Умови і ціна", "INT_TERMS", "card_terms.jpg"),
 }
 
 
+async def show_section(ctx, chat_id, code):
+    _, attr, img = SECTIONS[code]
+    await send_photo(ctx, chat_id, img)
+    await ctx.bot.send_message(chat_id, getattr(T, attr), reply_markup=kb_section(), parse_mode="HTML")
+
+
 def kb_int_menu():
-    s = [[B(name, callback_data=f"sec:{code}")] for code, (name, _) in SECTIONS.items()]
+    s = [[B(v[0], callback_data=f"sec:{code}")] for code, v in SECTIONS.items() if code != "launch"]
     return M(s + [[B(T.BTN_PAY, callback_data="pay")], [B(T.BTN_MENU, callback_data="menu")]])
 
 
@@ -107,8 +117,8 @@ async def funnel_intensive(ctx, chat_id):
 
 async def intensive_card(ctx, chat_id):
     """Картка інтенсиву як в Ані: фото, коротко, розділи кнопками."""
-    if not await send_photo(ctx, chat_id, "intensive.jpg", T.INT_1):
-        await ctx.bot.send_message(chat_id, T.INT_1, parse_mode="HTML")
+    await send_photo(ctx, chat_id, "card_launch.jpg")
+    await ctx.bot.send_message(chat_id, T.INT_1, parse_mode="HTML", reply_markup=kb_bottom())
     await ctx.bot.send_message(chat_id, T.INT_MENU, reply_markup=kb_int_menu(), parse_mode="HTML")
 
 
@@ -157,6 +167,18 @@ async def paid_job(ctx):
         log.warning("paid_job: %s", e)
 
 
+async def start_pay(ctx, u, chat):
+    db.set_field(u.id, "asked_int", 1)
+    url = await wfp.create_invoice(u.id, "int", C.INTENSIVE_AMOUNT, "UAH", f"Інтенсив «{C.INTENSIVE_NAME}»")
+    if url:
+        await ctx.bot.send_message(chat, T.PAY_LINK, reply_markup=M([[B("Оплатити", url=url)], [B(T.BTN_MENU, callback_data="menu")]]))
+        await notify_admins(ctx, f"💳 {who(u)} отримав(ла) посилання на оплату інтенсиву.")
+    else:
+        await ctx.bot.send_message(chat, T.PAY_MANUAL)
+        await notify_admins(ctx, f"⚠️ Автооплата не спрацювала ({wfp.LAST_ERROR or 'причина невідома'}). Заявка на інтенсив: {who(u)}",
+                            M([[B("Відкрити доступ", callback_data=f"grant:{u.id}")]]))
+
+
 # ---------- кнопки ----------
 async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
@@ -180,22 +202,11 @@ async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     elif data.startswith("sec:"):
         code = data.split(":", 1)[1]
         if code in SECTIONS:
-            text = getattr(T, SECTIONS[code][1])
-            if code == "author" and await send_photo(ctx, chat, "intensive.jpg"):
-                pass
-            await ctx.bot.send_message(chat, text, reply_markup=kb_section(), parse_mode="HTML")
+            await show_section(ctx, chat, code)
     elif data.startswith("soon:"):
         await ctx.bot.send_message(chat, T.SOON, reply_markup=M([[B(T.BTN_INTENSIVE, callback_data="int")]]))
     elif data == "pay":
-        db.set_field(u.id, "asked_int", 1)
-        url = await wfp.create_invoice(u.id, "int", C.INTENSIVE_AMOUNT, "UAH", f"Інтенсив «{C.INTENSIVE_NAME}»")
-        if url:
-            await ctx.bot.send_message(chat, T.PAY_LINK, reply_markup=M([[B("Оплатити", url=url)], [B(T.BTN_MENU, callback_data="menu")]]))
-            await notify_admins(ctx, f"💳 {who(u)} отримав(ла) посилання на оплату інтенсиву.")
-        else:
-            await ctx.bot.send_message(chat, T.PAY_MANUAL)
-            await notify_admins(ctx, f"⚠️ Автооплата не спрацювала ({wfp.LAST_ERROR or 'причина невідома'}). Заявка на інтенсив: {who(u)}",
-                                M([[B("Відкрити доступ", callback_data=f"grant:{u.id}")]]))
+        await start_pay(ctx, u, chat)
     elif data == "install":
         await ctx.bot.send_message(chat, T.INSTALL + (f"\n{C.AUTHOR_CONTACT}" if C.AUTHOR_CONTACT else ""))
         await notify_admins(ctx, f"🗓 Хоче розтермінування на 3 місяці: {who(u)}",
@@ -208,13 +219,16 @@ async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     u = update.effective_user
     txt = update.message.text
-    if txt == T.BTN_HOME:
+    if txt in BOTTOM:
         ctx.user_data.pop("ask", None)
-        await update.message.reply_text(T.START_2, reply_markup=kb_start(), parse_mode="HTML")
-        return
-    if txt == T.BTN_INT_SHORT:
-        ctx.user_data.pop("ask", None)
-        await intensive_card(ctx, update.effective_chat.id)
+        code = BOTTOM[txt]
+        chat = update.effective_chat.id
+        if code == "home":
+            await update.message.reply_text(T.START_2, reply_markup=kb_start(), parse_mode="HTML")
+        elif code == "pay":
+            await start_pay(ctx, u, chat)
+        else:
+            await show_section(ctx, chat, code)
         return
     if ctx.user_data.pop("ask", False):
         await notify_admins(ctx, f"❓ Питання від {who(u)}:\n\n{update.message.text}")
