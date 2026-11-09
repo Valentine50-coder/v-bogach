@@ -16,7 +16,8 @@ INTENSIVE_LENGTH = "тиждень"
 INTENSIVE_FORMAT = "Telegram-канал та чат підтримки"
 
 # Нік Валентини для питань (наприклад "@valentina"); порожньо = питання йдуть адмінам через агента
-AUTHOR_CONTACT = ""
+AUTHOR_CONTACT = "@health_shvets"
+CHANNEL_URL = "https://t.me/health_vshvets"  # канал Валентини
 
 # Кнопки стартового меню: (текст, код). Поки що всі відповідають «скоро».
 START_BUTTONS = [

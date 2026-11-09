@@ -31,7 +31,8 @@ def kb_start():
             [B(T.BTN_INTENSIVE, callback_data="int")],
             [B(quiz.BTN_MENU, callback_data="qz:start")]]
     rows += [[B(text, callback_data=f"soon:{code}")] for text, code in C.START_BUTTONS]
-    rows.append([B(T.BTN_ASK_V, callback_data="ask")])
+    rows.append([B(T.BTN_CHANNEL, url=C.CHANNEL_URL)])
+    rows.append([kb_ask()])
     return M(rows)
 
 
