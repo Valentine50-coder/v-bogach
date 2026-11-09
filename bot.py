@@ -27,11 +27,19 @@ def is_admin(uid): return uid in C.ADMIN_IDS
 
 
 def kb_start():
-    rows = [[B(T.BTN_INTENSIVE, callback_data="int")],
-            [B(quiz.BTN_MENU, callback_data="qz:start")],
-            [B(T.BTN_ABOUT, callback_data="sec:author")]]
+    rows = [[B(T.BTN_ABOUT, callback_data="sec:author")],
+            [B(T.BTN_INTENSIVE, callback_data="int")],
+            [B(quiz.BTN_MENU, callback_data="qz:start")]]
     rows += [[B(text, callback_data=f"soon:{code}")] for text, code in C.START_BUTTONS]
+    rows.append([B(T.BTN_ASK_V, callback_data="ask")])
     return M(rows)
+
+
+def kb_ask():
+    """Кнопка «Запитати у Валентини»: напряму в Telegram, якщо задано контакт, інакше через агента."""
+    if C.AUTHOR_CONTACT:
+        return B(T.BTN_ASK_V, url=f"https://t.me/{C.AUTHOR_CONTACT.lstrip('@')}")
+    return B(T.BTN_ASK_V, callback_data="ask")
 
 
 def kb_bottom():
@@ -74,11 +82,13 @@ def kb_int_menu():
 def kb_offer():
     return M([[B(T.BTN_PAY, callback_data="pay")],
               [B("Детальніше про інтенсив", callback_data="int")],
+              [kb_ask()],
               [B(T.BTN_MENU, callback_data="menu")]])
 
 
 def kb_section():
     return M([[B(T.BTN_PAY, callback_data="pay")],
+              [kb_ask()],
               [B(T.BTN_BACK_INT, callback_data="int")],
               [B(T.BTN_MENU, callback_data="menu")]])
 
@@ -131,16 +141,29 @@ async def intensive_card(ctx, chat_id):
     await ctx.bot.send_message(chat_id, T.INT_MENU, reply_markup=kb_int_menu(), parse_mode="HTML")
 
 
+async def funnel_site(ctx, chat_id):
+    """З сайту: людина вже все прочитала, тут коротко, оплата і питання до Валентини."""
+    if not await send_photo(ctx, chat_id, "card_launch.jpg", T.SITE_HELLO, kb_bottom()):
+        await ctx.bot.send_message(chat_id, T.SITE_HELLO, parse_mode="HTML", reply_markup=kb_bottom())
+    await ctx.bot.send_message(chat_id, T.SITE_OFFER, parse_mode="HTML", reply_markup=M([
+        [B(T.BTN_GO_PAY, callback_data="pay")],
+        [kb_ask()],
+        [B("Ще раз про інтенсив", callback_data="int")]]))
+
+
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     u = update.effective_user
     arg = (ctx.args[0].lower() if ctx.args else "")
-    src = "hochu" if arg in ("hochu", "xochu", "intensive") else ("test" if arg in ("test", "diagnostyka", "diag") else "start")
+    src = ("hochu" if arg in ("hochu", "xochu", "intensive") else "test" if arg in ("test", "diagnostyka", "diag")
+           else "site" if arg == "site" else "start")
     new = db.get_user(u.id) is None
     db.upsert_user(u, src)
     if new:
-        await notify_admins(ctx, f"👋 Новий підписник ({ {'hochu': 'кодове слово ХОЧУ', 'test': 'діагностика'}.get(src, 'старт') }): {who(u)}")
+        await notify_admins(ctx, f"👋 Новий підписник ({ {'hochu': 'кодове слово ХОЧУ', 'test': 'діагностика', 'site': 'з сайту'}.get(src, 'старт') }): {who(u)}")
     if src == "hochu":
         await funnel_intensive(ctx, update.effective_chat.id)
+    elif src == "site":
+        await funnel_site(ctx, update.effective_chat.id)
     elif src == "test":
         await ctx.bot.send_message(update.effective_chat.id, "Вітаю! ❤", reply_markup=kb_bottom())
         await quiz.start(ctx.bot, update.effective_chat.id)
@@ -157,7 +180,8 @@ async def cmd_menu(update: Update, ctx):
 async def do_grant(ctx, uid):
     db.set_field(uid, "int_paid", 1)
     kb = await groups.invite_kb(ctx.bot, uid, "int")
-    text = T.ACCESS + (T.GROUP_JOIN if kb else T.ACCESS_NO_GROUP)
+    text = T.ACCESS + (T.GROUP_JOIN if kb else T.ACCESS_NO_GROUP) + T.ACCESS_ASK
+    kb = M([list(r) for r in (kb.inline_keyboard if kb else [])] + [[kb_ask()]])
     try:
         await ctx.bot.send_message(uid, text, parse_mode="HTML", reply_markup=kb)
     except Exception as e:
