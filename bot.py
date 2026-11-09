@@ -13,6 +13,7 @@ import config as C
 import changelog
 import db
 import groups
+import quiz
 import texts as T
 import wfp
 
@@ -27,6 +28,7 @@ def is_admin(uid): return uid in C.ADMIN_IDS
 
 def kb_start():
     rows = [[B(T.BTN_INTENSIVE, callback_data="int")],
+            [B(quiz.BTN_MENU, callback_data="qz:start")],
             [B(T.BTN_ABOUT, callback_data="sec:author")]]
     rows += [[B(text, callback_data=f"soon:{code}")] for text, code in C.START_BUTTONS]
     return M(rows)
@@ -67,6 +69,12 @@ async def show_section(ctx, chat_id, code):
 def kb_int_menu():
     s = [[B(v[0], callback_data=f"sec:{code}")] for code, v in SECTIONS.items() if code != "launch"]
     return M(s + [[B(T.BTN_PAY, callback_data="pay")], [B(T.BTN_MENU, callback_data="menu")]])
+
+
+def kb_offer():
+    return M([[B(T.BTN_PAY, callback_data="pay")],
+              [B("Детальніше про інтенсив", callback_data="int")],
+              [B(T.BTN_MENU, callback_data="menu")]])
 
 
 def kb_section():
@@ -126,13 +134,16 @@ async def intensive_card(ctx, chat_id):
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     u = update.effective_user
     arg = (ctx.args[0].lower() if ctx.args else "")
-    src = "hochu" if arg in ("hochu", "xochu", "intensive") else "start"
+    src = "hochu" if arg in ("hochu", "xochu", "intensive") else ("test" if arg in ("test", "diagnostyka", "diag") else "start")
     new = db.get_user(u.id) is None
     db.upsert_user(u, src)
     if new:
-        await notify_admins(ctx, f"👋 Новий підписник ({'кодове слово ХОЧУ' if src == 'hochu' else 'старт'}): {who(u)}")
+        await notify_admins(ctx, f"👋 Новий підписник ({ {'hochu': 'кодове слово ХОЧУ', 'test': 'діагностика'}.get(src, 'старт') }): {who(u)}")
     if src == "hochu":
         await funnel_intensive(ctx, update.effective_chat.id)
+    elif src == "test":
+        await ctx.bot.send_message(update.effective_chat.id, "Вітаю! ❤", reply_markup=kb_bottom())
+        await quiz.start(ctx.bot, update.effective_chat.id)
     else:
         await funnel_start(ctx, update.effective_chat.id)
 
@@ -251,7 +262,11 @@ async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     chat = q.message.chat_id
     db.upsert_user(u)
 
-    if data.startswith("grp:"):
+    if data == "qz:start":
+        await quiz.start(ctx.bot, chat)
+    elif data.startswith("qz:"):
+        await quiz.on_cb(q, ctx, data, notify_admins, kb_offer)
+    elif data.startswith("grp:"):
         await groups.on_choose(q, ctx, data)
     elif data.startswith("grant:"):
         if is_admin(u.id):
@@ -309,7 +324,7 @@ async def cmd_stats(update: Update, ctx):
     if not is_admin(update.effective_user.id): return
     s = db.stats()
     await update.message.reply_text(f"📊 Усього людей: {s['total']}\nПрийшли за словом ХОЧУ: {s['hochu']}\n"
-                                    f"Натиснули «Оплатити»: {s['asked_int']}\nОплатили інтенсив: {s['int_paid']}")
+                                    f"Пройшли діагностику: {len(db.kv_prefix('quiz:'))}\nНатиснули «Оплатити»: {s['asked_int']}\nОплатили інтенсив: {s['int_paid']}")
 
 
 async def cmd_grant(update: Update, ctx):
@@ -337,7 +352,8 @@ async def cmd_help(update: Update, ctx):
         "/stats звіт\n/grant ID відкрити доступ вручну\n/wfptest перевірити WayForPay\n"
         "/grupa канал інтенсиву (у самому каналі чи групі: підключити)\n\n"
         f"Звичайний старт: https://t.me/{ctx.bot.username}\n"
-        f"Кодове слово ХОЧУ (для ManyChat): https://t.me/{ctx.bot.username}?start=hochu")
+        f"Кодове слово ХОЧУ, вся інформація (для ManyChat): https://t.me/{ctx.bot.username}?start=hochu\n"
+        f"Діагностика кишківника (для ManyChat): https://t.me/{ctx.bot.username}?start=test")
 
 
 async def on_error(update, ctx):
