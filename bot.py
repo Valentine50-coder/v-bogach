@@ -57,6 +57,12 @@ def kb_bottom(adm=False):
 HIDE = ReplyKeyboardRemove()
 
 
+async def ensure_bottom(ctx, uid, chat):
+    """10.11: хто має старе меню (до оновлення), отримує нове при першій дії, без розсилки."""
+    if not ctx.user_data.get("hid") and db.flag_get(f"bm2:{uid}") != "1":
+        await show_bottom(ctx, chat)
+
+
 def hide(ctx):
     """Сховати нижнє меню, поки людина проходить діагностику чи пише питання."""
     ctx.user_data["hid"] = True
@@ -65,11 +71,13 @@ def hide(ctx):
 
 def bottom(ctx, uid):
     ctx.user_data.pop("hid", None)
+    db.flag_set(f"bm2:{uid}", "1")
     return kb_bottom(is_admin(uid))
 
 
 async def show_bottom(ctx, chat_id, text=None):
     ctx.user_data.pop("hid", None)
+    db.flag_set(f"bm2:{chat_id}", "1")
     await ctx.bot.send_message(chat_id, text or T.MENU_BACK, reply_markup=kb_bottom(is_admin(chat_id)), parse_mode="HTML")
 
 
@@ -141,15 +149,15 @@ def who(u):
 
 # ---------- воронки ----------
 async def funnel_start(ctx, chat_id):
-    if not await send_photo(ctx, chat_id, "start.jpg", T.START_1, kb_bottom(is_admin(chat_id))):
-        await ctx.bot.send_message(chat_id, T.START_1, reply_markup=kb_bottom(is_admin(chat_id)))
+    if not await send_photo(ctx, chat_id, "start.jpg", T.START_1, bottom(ctx, chat_id)):
+        await ctx.bot.send_message(chat_id, T.START_1, reply_markup=bottom(ctx, chat_id))
     await ctx.bot.send_chat_action(chat_id, "typing")
     await asyncio.sleep(5)
     await ctx.bot.send_message(chat_id, T.START_2, reply_markup=kb_start(is_admin(chat_id)), parse_mode="HTML")
 
 
 async def funnel_intensive(ctx, chat_id):
-    await ctx.bot.send_message(chat_id, T.INT_1, parse_mode="HTML", reply_markup=kb_bottom(is_admin(chat_id)))
+    await ctx.bot.send_message(chat_id, T.INT_1, parse_mode="HTML", reply_markup=bottom(ctx, chat_id))
     if not await send_photo(ctx, chat_id, "intensive.jpg", T.INT_AUTHOR):
         await ctx.bot.send_message(chat_id, T.INT_AUTHOR, parse_mode="HTML")
     for part in (T.INT_FOR, T.INT_PROGRAM, T.INT_GET):
@@ -162,14 +170,14 @@ async def funnel_intensive(ctx, chat_id):
 async def intensive_card(ctx, chat_id):
     """Картка інтенсиву як в Ані: фото, коротко, розділи кнопками."""
     await send_photo(ctx, chat_id, "card_launch.jpg")
-    await ctx.bot.send_message(chat_id, T.INT_1, parse_mode="HTML", reply_markup=kb_bottom(is_admin(chat_id)))
+    await ctx.bot.send_message(chat_id, T.INT_1, parse_mode="HTML", reply_markup=bottom(ctx, chat_id))
     await ctx.bot.send_message(chat_id, T.INT_MENU + T.URGENT, reply_markup=kb_int_menu(), parse_mode="HTML")
 
 
 async def funnel_site(ctx, chat_id):
     """З сайту: людина вже все прочитала, тут коротко, оплата і питання до Валентини."""
-    if not await send_photo(ctx, chat_id, "card_launch.jpg", T.SITE_HELLO, kb_bottom(is_admin(chat_id))):
-        await ctx.bot.send_message(chat_id, T.SITE_HELLO, parse_mode="HTML", reply_markup=kb_bottom(is_admin(chat_id)))
+    if not await send_photo(ctx, chat_id, "card_launch.jpg", T.SITE_HELLO, bottom(ctx, chat_id)):
+        await ctx.bot.send_message(chat_id, T.SITE_HELLO, parse_mode="HTML", reply_markup=bottom(ctx, chat_id))
     await ctx.bot.send_message(chat_id, T.SITE_OFFER + T.URGENT, parse_mode="HTML", reply_markup=M([
         [B(T.BTN_GO_PAY, callback_data="pay")],
         [kb_ask()],
@@ -192,7 +200,7 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     elif src == "site":
         await funnel_site(ctx, update.effective_chat.id)
     elif src == "test":
-        await ctx.bot.send_message(update.effective_chat.id, "Вітаю! ❤", reply_markup=kb_bottom(is_admin(u.id)))
+        await ctx.bot.send_message(update.effective_chat.id, "Вітаю! ❤", reply_markup=bottom(ctx, u.id))
         await quiz.start(ctx.bot, update.effective_chat.id)
     else:
         await funnel_start(ctx, update.effective_chat.id)
@@ -316,6 +324,8 @@ async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     u = q.from_user
     chat = q.message.chat_id
     db.upsert_user(u)
+    if not data.startswith(("qz:", "grp:", "grant:")):
+        await ensure_bottom(ctx, u.id, chat)
     if data.startswith("crm:"):
         if is_admin(u.id):
             await crm.on_cb(q, ctx, data)
