@@ -119,6 +119,7 @@ async def on_cb(q, ctx, data, notify_admins, kb_offer):
     chat = q.message.chat_id
     if data == "qz:go":
         ctx.user_data["qz"] = []
+        __import__("crm").log_ev(q.from_user.id, "quiz_go")
         await ctx.bot.send_message(chat, q_text(0), reply_markup=kb_q(0), parse_mode="HTML")
         return
     _, i, j = data.split(":")
@@ -127,6 +128,7 @@ async def on_cb(q, ctx, data, notify_admins, kb_offer):
     if i != len(ans):  # стара кнопка або повторне натискання
         return
     ans.append(j)
+    __import__("crm").log_ev(q.from_user.id, f"quiz_q{i}")
     try:
         await q.edit_message_text(f"{q_text(i)}\n\n✓ <i>{QUESTIONS[i][1][j][0]}</i>", parse_mode="HTML")
     except Exception:
@@ -136,6 +138,7 @@ async def on_cb(q, ctx, data, notify_admins, kb_offer):
         return
     zones = result(ans)
     db.flag_set(f"quiz:{q.from_user.id}", ",".join(zones))
+    __import__("crm").log_ev(q.from_user.id, "quiz_done", ",".join(zones))
     for z in zones:
         img, text = RES[z]
         await send_photo(ctx.bot, chat, img)
