@@ -22,5 +22,8 @@
 ## Статистика і CRM (10.11)
 - `crm.py` (спільний з realtor-bot): таблиця events, `crm.log_ev` у кроках бота і в quiz.py; `daily_job` о 9:00 за Києвом шле адмінам звіт за вчора (kv crm_daily); кнопка «👥 CRM» у головному меню адмінів і /crm. Налаштування в `crm.setup(...)` у main().
 
+## Нижнє меню (10.11)
+- `T.BTN_BOTTOM` з першим рядком «🧠 ЗДОРОВИЙ КИШКІВНИК» (home), `kb_bottom(adm)` is_persistent=False + CRM для адмінів; `hide(ctx)` на qz:go і «Запитати» (user_data["hid"]), `bottom(ctx, uid)`/`show_bottom` повертають (результат діагностики через bottom_fn у quiz.on_cb, QUESTION_OK, кнопки «menu»/«int»). Кнопки меню в on_text обробляються ДО crm.on_admin_text.
+
 ## Звіт після оновлення (9.11)
 При кожній зміні коду: змінити VERSION і NOTES у changelog.py (пункти простими словами). Агент після перезапуску один раз шле адмінам «Агента оновлено».

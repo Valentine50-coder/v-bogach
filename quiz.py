@@ -114,7 +114,7 @@ async def start(bot, chat_id):
         await bot.send_message(chat_id, INTRO, reply_markup=kb, parse_mode="HTML")
 
 
-async def on_cb(q, ctx, data, notify_admins, kb_offer):
+async def on_cb(q, ctx, data, notify_admins, kb_offer, bottom_fn=None):
     """data: qz:go або qz:<питання>:<відповідь>."""
     chat = q.message.chat_id
     if data == "qz:go":
@@ -139,10 +139,11 @@ async def on_cb(q, ctx, data, notify_admins, kb_offer):
     zones = result(ans)
     db.flag_set(f"quiz:{q.from_user.id}", ",".join(zones))
     __import__("crm").log_ev(q.from_user.id, "quiz_done", ",".join(zones))
-    for z in zones:
+    for n, z in enumerate(zones):
         img, text = RES[z]
         await send_photo(ctx.bot, chat, img)
-        await ctx.bot.send_message(chat, text, parse_mode="HTML")
+        await ctx.bot.send_message(chat, text, parse_mode="HTML",          # з першим результатом повертаємо меню
+                                   reply_markup=bottom_fn() if (n == 0 and bottom_fn) else None)
     import texts as T
     await ctx.bot.send_message(chat, OFFER + T.URGENT + "\n\n" + DISCLAIMER, reply_markup=kb_offer(), parse_mode="HTML")
     u = q.from_user
