@@ -28,6 +28,8 @@ CFG = {
     "quiz_zones": {},  # зона діагностики -> назва
     "paid_fn": None,  # uid -> True, якщо оплатив (для груп)
     "parts_fn": None,  # uid -> True, якщо платить частинами і ще не все
+    "quiz_title": "Діагностика",
+    "price_evs": ["pay_choice", "invoice", "price"],  # події «бачили ціну»
 }
 
 
@@ -115,6 +117,11 @@ def source(uid):
             s = (u["src"] if u and "src" in u.keys() else "") or ""
         except Exception:
             s = ""
+    if not s:
+        try:
+            s = db.flag_get(f"src:{uid}") or ""
+        except Exception:
+            s = ""
     return s or "start"
 
 
@@ -167,7 +174,7 @@ def report(t0, t1, title):
             for z in (e["extra"] or "").split(","):
                 if z:
                     zones[z] = zones.get(z, 0) + 1
-        L += ["", f"<b>Діагностика:</b> почали {len(qgo)}, завершили {len({e['uid'] for e in qdone})}"]
+        L += ["", f"<b>{CFG['quiz_title']}:</b> почали {len(qgo)}, завершили {len({e['uid'] for e in qdone})}"]
         if zones:
             L.append("Результати: " + ", ".join(f"{CFG['quiz_zones'].get(z, z)} {n}" for z, n in sorted(zones.items(), key=lambda x: -x[1])))
         qlast = {}
@@ -239,7 +246,7 @@ async def daily_job(ctx):
 # ---------- групи CRM ----------
 GROUPS = [
     ("new7", "🆕 Прийшли за 7 днів"),
-    ("quiz", "🧪 Пройшли діагностику"),
+    ("quiz", "🧪 Пройшли діагностику/тест"),
     ("price", "👀 Дійшли до оплати, не купили"),
     ("hot", "🔥 Взяли посилання на оплату, не оплатили"),
     ("parts", "🧾 Платять частинами"),
@@ -282,7 +289,7 @@ def members(g):
     elif g == "quiz":
         s = _with(["quiz_done"])
     elif g == "price":
-        s = _with(["pay_choice", "invoice", "price"]) - paid
+        s = _with(CFG["price_evs"]) - paid
     elif g == "hot":
         s = _with(["invoice"]) - paid
     elif g == "parts":
@@ -301,7 +308,8 @@ def members(g):
 
 
 def kb_menu():
-    rows = [[B(f"{t} ({len(members(g))})", callback_data=f"crm:g:{g}")] for g, t in GROUPS]
+    rows = [[B(f"{t} ({len(members(g))})", callback_data=f"crm:g:{g}")] for g, t in GROUPS
+            if not (g == "parts" and not CFG["parts_fn"]) and not (g == "quiz" and not CFG["quiz_zones"])]
     rows += [[B("🔎 Знайти людину", callback_data="crm:find")],
              [B("📅 Сьогодні", callback_data="crm:today"), B("📊 7 днів", callback_data="crm:week")]]
     return M(rows)
