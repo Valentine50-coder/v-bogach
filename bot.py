@@ -184,6 +184,67 @@ async def funnel_site(ctx, chat_id):
         [B("Ще раз про інтенсив", callback_data="int")]]))
 
 
+# ---------- 11.11: обов'язкова підписка на канал ----------
+def kb_gate():
+    return M([[B(T.GATE_BTN_SUB, url=C.CHANNEL_URL)], [B(T.GATE_BTN_CHECK, callback_data="chg:check")]])
+
+
+async def is_member(bot, uid):
+    """True / False, або None, якщо агент не може перевірити (не адмін каналу)."""
+    try:
+        m = await bot.get_chat_member(C.CHANNEL_USERNAME, uid)
+        return m.status in ("member", "administrator", "creator", "restricted")
+    except Exception as e:
+        log.warning("перевірка підписки: %s", e)
+        return None
+
+
+async def gate(ctx, uid, chat_id, src=None):
+    """True, якщо людину зупинили: вона не підписана, їй показано кнопки. src запам'ятовуємо, щоб потім відкрити."""
+    if not C.CHANNEL_USERNAME or is_admin(uid):
+        return False
+    member = await is_member(ctx.bot, uid)
+    if member is None:
+        last = db.flag_get("gate_alert")
+        if not last or time.time() - float(last) > 86400:
+            db.flag_set("gate_alert", str(time.time()))
+            await notify_admins(ctx, T.GATE_ADMIN_ALERT)
+        return False
+    if member is False:
+        if src:
+            db.flag_set(f"gate_src:{uid}", src)
+        crm.log_ev(uid, "gate")
+        await ctx.bot.send_message(chat_id, T.GATE_WELCOME, reply_markup=kb_gate(), parse_mode="HTML")
+        return True
+    return False
+
+
+async def gate_job(ctx):
+    """Один раз пише адмінам, коли агент став адміном каналу і перевірка запрацювала."""
+    if not C.CHANNEL_USERNAME or db.flag_get("gate_connected") == "1":
+        return
+    try:
+        me = await ctx.bot.get_chat_member(C.CHANNEL_USERNAME, ctx.bot.id)
+    except Exception as e:
+        log.info("gate_job: %s", e)
+        return
+    if me.status in ("administrator", "creator"):
+        db.flag_set("gate_connected", "1")
+        await notify_admins(ctx, T.GATE_CONNECTED)
+
+
+async def go_src(ctx, update_or_none, chat_id, uid, src):
+    if src == "hochu":
+        await funnel_intensive(ctx, chat_id)
+    elif src == "site":
+        await funnel_site(ctx, chat_id)
+    elif src == "test":
+        await ctx.bot.send_message(chat_id, "Вітаю! ❤", reply_markup=bottom(ctx, uid))
+        await quiz.start(ctx.bot, chat_id)
+    else:
+        await funnel_start(ctx, chat_id)
+
+
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     u = update.effective_user
     arg = (ctx.args[0].lower() if ctx.args else "")
@@ -195,15 +256,9 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     crm.log_ev(u.id, {"hochu": "int_full", "site": "site", "test": "quiz_open"}.get(src, "hello"))
     if new:
         await notify_admins(ctx, f"👋 Новий підписник ({ {'hochu': 'кодове слово ХОЧУ', 'test': 'діагностика', 'site': 'з сайту'}.get(src, 'старт') }): {who(u)}")
-    if src == "hochu":
-        await funnel_intensive(ctx, update.effective_chat.id)
-    elif src == "site":
-        await funnel_site(ctx, update.effective_chat.id)
-    elif src == "test":
-        await ctx.bot.send_message(update.effective_chat.id, "Вітаю! ❤", reply_markup=bottom(ctx, u.id))
-        await quiz.start(ctx.bot, update.effective_chat.id)
-    else:
-        await funnel_start(ctx, update.effective_chat.id)
+    if await gate(ctx, u.id, update.effective_chat.id, src):
+        return
+    await go_src(ctx, update, update.effective_chat.id, u.id, src)
 
 
 async def cmd_menu(update: Update, ctx):
@@ -324,6 +379,18 @@ async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     u = q.from_user
     chat = q.message.chat_id
     db.upsert_user(u)
+    if data == "chg:check":
+        member = await is_member(ctx.bot, u.id)
+        if member is False and not is_admin(u.id):
+            await ctx.bot.send_message(chat, T.GATE_NOT_YET, reply_markup=kb_gate(), parse_mode="HTML")
+            return
+        crm.log_ev(u.id, "gate_ok")
+        await ctx.bot.send_message(chat, T.GATE_OK, parse_mode="HTML")
+        src = db.flag_get(f"gate_src:{u.id}") or "start"
+        await go_src(ctx, None, chat, u.id, src)
+        return
+    if not data.startswith(("grp:", "grant:", "crm:")) and await gate(ctx, u.id, chat):
+        return
     if not data.startswith(("qz:", "grp:", "grant:")):
         await ensure_bottom(ctx, u.id, chat)
     if data.startswith("crm:"):
@@ -374,6 +441,8 @@ async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     u = update.effective_user
     txt = update.message.text
+    if await gate(ctx, u.id, update.effective_chat.id):
+        return
     if txt in BOTTOM:                 # кнопка меню важливіша за очікування тексту
         for k in ("ask", "crm_wait"):
             ctx.user_data.pop(k, None)
@@ -514,6 +583,7 @@ def main():
     app.add_handler(MessageHandler(filters.ChatType.PRIVATE & filters.TEXT & ~filters.COMMAND, on_text))
     app.add_error_handler(on_error)
     app.job_queue.run_repeating(paid_job, interval=60, first=45)
+    app.job_queue.run_repeating(gate_job, interval=600, first=60)  # 11.11: «канал підключено» адмінам
     app.job_queue.run_repeating(install_job, interval=3600, first=120)
     app.job_queue.run_repeating(crm.daily_job, interval=300, first=90)  # 10.11: звіт адмінам щоранку о 9:00
     log.info("Агента запущено")

@@ -27,3 +27,7 @@
 
 ## Звіт після оновлення (9.11)
 При кожній зміні коду: змінити VERSION і NOTES у changelog.py (пункти простими словами). Агент після перезапуску один раз шле адмінам «Агента оновлено».
+
+## Обов'язкова підписка (11.11)
+- config.CHANNEL_USERNAME = "@health_vshvets". bot.gate(ctx, uid, chat, src) у start (src зберігається в flag gate_src:<uid>), на початку on_cb (крім grp:/grant:/crm:) і on_text; кнопка chg:check → GATE_OK і go_src(src). Якщо агент не адмін каналу: пропускає всіх і раз на добу GATE_ADMIN_ALERT. gate_job раз на 10 хв: коли агент став адміном каналу, один раз GATE_CONNECTED адмінам (flag gate_connected).
+- У закріпленому пості каналу «Усі мої послуги» веде на старий @health_shvets_bot, порадили замінити на @valentina_shvets_bot.

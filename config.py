@@ -18,6 +18,7 @@ INTENSIVE_FORMAT = "Telegram-канал та чат підтримки"
 # Нік Валентини для питань (наприклад "@valentina"); порожньо = питання йдуть адмінам через агента
 AUTHOR_CONTACT = "@health_shvets"
 CHANNEL_URL = "https://t.me/health_vshvets"  # канал Валентини
+CHANNEL_USERNAME = "@health_vshvets"  # 11.11: обов'язкова підписка; порожньо = не перевіряємо
 
 # Кнопки стартового меню: (текст, код). Поки що всі відповідають «скоро».
 START_BUTTONS = [
