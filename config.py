@@ -8,11 +8,11 @@ DB_PATH = os.environ.get("DB_PATH", "bot.db")
 # Інтенсив «Здоровий кишківник»
 INTENSIVE_NAME = "Здоровий кишківник"
 INTENSIVE_AMOUNT = 1444          # сума для автоматичної оплати, грн
-INTENSIVE_PRICE_NOTE = "до 14.11"  # підпис біля ціни
+INTENSIVE_PRICE_NOTE = "до 22.11"  # підпис біля ціни
 INSTALL_PARTS = [482, 481, 481]  # розтермінування: суми платежів (разом 1444), наступні через кожні 30 днів
 INSTALL_DAYS = 30
 INTENSIVE_START = "24.11"
-INTENSIVE_LENGTH = "тиждень"
+INTENSIVE_LENGTH = "2 тижні"
 INTENSIVE_FORMAT = "Telegram-канал та чат підтримки"
 
 # Нік Валентини для питань (наприклад "@valentina"); порожньо = питання йдуть адмінам через агента

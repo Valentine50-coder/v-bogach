@@ -82,6 +82,8 @@ async def show_bottom(ctx, chat_id, text=None):
 
 
 BOTTOM = {t: code for row in T.BTN_BOTTOM for t, code in row}
+BOTTOM.update({"Про Валентину": "author", "Про запуск": "launch", "🎯 Для кого": "for", "Програма": "program",  # 12.11: старі назви
+               "🎁 Що ви отримаєте": "get", "Умови і ціна": "terms", "💳 Оплатити": "pay", "🏠 Меню": "home"})
 
 
 def kb_intensive():
@@ -92,12 +94,12 @@ def kb_intensive():
 
 
 SECTIONS = {  # код: (назва кнопки, текст, картинка)
-    "launch": ("Про запуск", "INT_1", "card_launch.jpg"),
-    "author": ("Про авторку", "INT_AUTHOR", "card_author.jpg"),
-    "for": ("Для кого", "INT_FOR", "card_for.jpg"),
-    "program": ("Програма", "INT_PROGRAM", "card_program.jpg"),
-    "get": ("Що ви отримаєте", "INT_GET", "card_get.jpg"),
-    "terms": ("Умови і ціна", "INT_TERMS", "card_terms.jpg"),
+    "launch": ("ПРО ЗАПУСК", "INT_1", "card_launch.jpg"),
+    "author": ("ПРО АВТОРКУ", "INT_AUTHOR", "card_author.jpg"),
+    "for": ("🎯 ДЛЯ КОГО", "INT_FOR", "card_for.jpg"),
+    "program": ("ПРОГРАМА", "INT_PROGRAM", "card_program.jpg"),
+    "get": ("🎁 ЩО ВИ ОТРИМАЄТЕ", "INT_GET", "card_get.jpg"),
+    "terms": ("УМОВИ І ЦІНА", "INT_TERMS", "card_terms.jpg"),
 }
 
 

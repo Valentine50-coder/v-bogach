@@ -31,3 +31,9 @@
 ## Обов'язкова підписка (11.11)
 - config.CHANNEL_USERNAME = "@health_vshvets". bot.gate(ctx, uid, chat, src) у start (src зберігається в flag gate_src:<uid>), на початку on_cb (крім grp:/grant:/crm:) і on_text; кнопка chg:check → GATE_OK і go_src(src). Якщо агент не адмін каналу: пропускає всіх і раз на добу GATE_ADMIN_ALERT. gate_job раз на 10 хв: коли агент став адміном каналу, один раз GATE_CONNECTED адмінам (flag gate_connected).
 - У закріпленому пості каналу «Усі мої послуги» веде на старий @health_shvets_bot, порадили замінити на @valentina_shvets_bot.
+
+## Правки Валентини (12.11)
+- Інтенсив 2 тижні, спецціна до 22.11 (config). Тексти INT_FOR, INT_PROGRAM (14 тем з її документа), INT_GET дослівно від неї; заголовки розділів і нижнє меню великими літерами (старі назви кнопок лишились у BOTTOM для старих клавіатур); BTN_ASK_V = «Поставити питання»; URGENT + «Кількість місць обмежена ❗».
+- quiz.py: 10 питань, ті самі 5 зон (zakrep, meteo, skin, nerv, ok), у результатах номери нових тем.
+- Картки card_launch/program/terms перезібрано (HTML-шаблони в scratchpad vcards/, Playwright 1280×720).
+- Сайт (Netlify) оновлено тими самими правками, новий index.html надіслано Тетяні; таймер до 22.11.
