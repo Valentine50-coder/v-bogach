@@ -1,6 +1,6 @@
 # CLAUDE.md: агент Валентини Швець (v-bogach), читай першим
 
-- Логін агента: @valentina_shvets_bot (valentina_help_bot чужий!). Сайт: glittering-mooncake-8f3227.netlify.app.
+- Логін агента: @valentina_shvets_bot (valentina_help_bot чужий!). Сайт: з 12.11 https://tafijcuktetana12-coder.github.io/agents/kyshkivnyk/ (репозиторій tafijcuktetana12-coder/agents, папка kyshkivnyk; на Netlify glittering-mooncake-8f3227 закінчились кредити, стара версія).
 - Власниця репозиторію: Valentine50-coder. Код веде Claude Тетяни (tafijcuktetana12-coder співавтор, Claude GitHub App встановлено на v-bogach).
 - Хостинг: Railway (акаунт Валентини, Limited Trial; Hobby вмикається вручну). Кожен пуш у main = перезапуск.
 - Основа взята з realtor-bot (Анін агент): wfp.py (автооплата без вебхука, CHECK_STATUS раз на хвилину), groups.py (одноразові посилання в групу/канал).
