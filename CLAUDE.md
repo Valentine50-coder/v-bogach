@@ -37,3 +37,6 @@
 - quiz.py: 10 питань, ті самі 5 зон (zakrep, meteo, skin, nerv, ok), у результатах номери нових тем.
 - Картки card_launch/program/terms перезібрано (HTML-шаблони в scratchpad vcards/, Playwright 1280×720).
 - Сайт (Netlify) оновлено тими самими правками, новий index.html надіслано Тетяні; таймер до 22.11.
+
+## Сайт на GitHub Pages (12.11)
+- Сайт інтенсиву тепер у цьому репозиторії: docs/index.html (джерело правди). Pages вмикає Валентина: Settings → Pages → Branch main, /docs. Адреса: https://valentine50-coder.github.io/v-bogach/ . Копія на tafijcuktetana12-coder.github.io/agents/kyshkivnyk/ тимчасова, Netlify (glittering-mooncake) заблокований через кредити.
