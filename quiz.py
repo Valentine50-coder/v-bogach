@@ -90,7 +90,7 @@ def kb_q(i):
 
 
 def q_text(i):
-    return f"<code>Питання {i + 1} з {len(QUESTIONS)}</code>\n\n{QUESTIONS[i][0]}"
+    return f"<code>Питання {i + 1} з {len(QUESTIONS)}</code>\n\n<b>{QUESTIONS[i][0].replace('<b>', '').replace('</b>', '')}</b>"  # 12.11: питання повністю жирним
 
 
 def result(ans):
