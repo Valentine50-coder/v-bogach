@@ -40,3 +40,6 @@
 
 ## Сайт на GitHub Pages (12.11)
 - Сайт інтенсиву тепер у цьому репозиторії: docs/index.html (джерело правди). Pages вмикає Валентина: Settings → Pages → Branch main, /docs. Адреса: https://valentine50-coder.github.io/v-bogach/ . Копія на tafijcuktetana12-coder.github.io/agents/kyshkivnyk/ тимчасова, Netlify (glittering-mooncake) заблокований через кредити.
+
+## Дожими інтенсиву (13.11)
+- dozhim.py (спільний для Ані й Валентини) + dozhim_texts.py (START, TEXTS d1a..d3a, MID, l1..l3). job кожні 5 хв, 9:00-21:00 за Києвом: день 1 +1 год, +4 год, 19:00; день 2 11:00, 18:00; день 3 13:00; далі MID раз на 2 дні о 12:00; останній день перед START 10:00, 15:00, 20:00. Старт людини = max(joined, kv dz_launch), прогрес kv dz:<uid>, між дожимами ≥2 год (kv dz_at:<uid>), в останній день одразу актуальний. Не адмінам, не int_paid/course_paid, не тим, хто заблокував (events). Кнопки «Детальніше про інтенсив» (int) і «Запитати» (ask), «Не цікаво» немає (рішення Тетяни).
