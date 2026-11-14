@@ -587,6 +587,8 @@ def main():
     app.job_queue.run_repeating(paid_job, interval=60, first=45)
     app.job_queue.run_repeating(gate_job, interval=600, first=60)  # 11.11: «канал підключено» адмінам
     app.job_queue.run_repeating(install_job, interval=3600, first=120)
+    app.job_queue.run_once(__import__("instaposts").intro_job, when=60)  # 14.11: каруселі для Instagram, перша одразу
+    app.job_queue.run_repeating(__import__("instaposts").job, interval=300, first=200)  # 14.11: щодня о 9:00 до 18.11
     app.job_queue.run_repeating(__import__("dozhim").job, interval=300, first=180)  # 13.11: дожими інтенсиву (dozhim.py)
     app.job_queue.run_repeating(crm.daily_job, interval=300, first=90)  # 10.11: звіт адмінам щоранку о 9:00
     log.info("Агента запущено")
