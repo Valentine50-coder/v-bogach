@@ -59,8 +59,10 @@ async def send_post(bot, chat_id, key, title, caption):
     if not files:
         return
     hs = [open(f, "rb") for f in files]
-    try:
-        await bot.send_media_group(chat_id, [InputMediaPhoto(h) for h in hs])
+    try:  # 15.11: великий альбом інколи «таймаутить», хоча дійшов; опис надсилаємо все одно
+        await bot.send_media_group(chat_id, [InputMediaPhoto(h) for h in hs], read_timeout=120, write_timeout=120)
+    except Exception as e:
+        log.warning("instapost album %s %s: %s", key, chat_id, e)
     finally:
         for h in hs:
             h.close()
@@ -101,3 +103,17 @@ async def job(context):
         if t <= now < t + timedelta(hours=6) and db.flag_get(f"ip:{key}") != "1":
             db.flag_set(f"ip:{key}", "1")
             await _to_admins(context.bot, key, title, cap)
+
+
+async def fix_k2_job(context):
+    """15.11: опис до k2 не дійшов (альбом прийшов). Один раз надіслати тільки опис (kv ip_fixk2)."""
+    if db.flag_get("ip_fixk2") == "1" or datetime.now(TZ).strftime("%Y-%m-%d") != "2026-11-15":
+        return
+    db.flag_set("ip_fixk2", "1")
+    key, _, title, cap = POSTS[1]
+    for a in C.ADMIN_IDS:
+        try:
+            await context.bot.send_message(a, f"📌 Опис до сьогоднішньої каруселі {title}\n\nНатисніть і скопіюйте 👇")
+            await context.bot.send_message(a, cap)
+        except Exception as e:
+            log.warning("instapost fix k2 %s: %s", a, e)
