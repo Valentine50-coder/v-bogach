@@ -107,6 +107,7 @@ async def followup_job(ctx):
                          "WHERE f.sent = 0 AND f.at <= ? AND COALESCE(u.int_paid, 0) = 0", (now - FU_SEC,)).fetchall()
         c.execute("UPDATE vid_fu SET sent = 1 WHERE sent = 0 AND at <= ?", (now - FU_SEC,))  # до відправки
     for r in rows:
+        db.flag_set(f"dz_at:{r[0]}", str(now))  # 16.11: щоб дожим інтенсиву не прийшов одразу слідом (GAP 2 год)
         try:
             await ctx.bot.send_message(r[0], FOLLOW, parse_mode="HTML",
                                        reply_markup=M([[B(BTN_INT, callback_data="int")], [B(BTN_REVS, callback_data="revs")]]))
