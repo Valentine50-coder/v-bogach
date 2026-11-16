@@ -14,6 +14,7 @@ import changelog
 import db
 import groups
 import quiz
+import vidrev
 import crm
 import texts as T
 import wfp
@@ -30,7 +31,9 @@ def is_admin(uid): return uid in C.ADMIN_IDS
 def kb_start(adm=False):
     rows = [[B(T.BTN_ABOUT, callback_data="sec:author")],
             [B(T.BTN_INTENSIVE, callback_data="int")],
-            [B(quiz.BTN_MENU, callback_data="qz:start")]]
+            [B(quiz.BTN_MENU, callback_data="qz:start")],
+            [B(vidrev.BTN_VIDEO, callback_data="vid")],  # 16.11
+            [B(vidrev.BTN_REVS, callback_data="revs")]]
     rows += [[B(text, callback_data=f"soon:{code}")] for text, code in C.START_BUTTONS]
     rows.append([B(T.BTN_CHANNEL, url=C.CHANNEL_URL)])
     rows.append([kb_ask()])
@@ -111,7 +114,7 @@ async def show_section(ctx, chat_id, code):
 
 def kb_int_menu():
     s = [[B(v[0], callback_data=f"sec:{code}")] for code, v in SECTIONS.items() if code != "launch"]
-    return M(s + [[B(T.BTN_PAY, callback_data="pay")], [B(T.BTN_MENU, callback_data="menu")]])
+    return M(s + [[B(vidrev.BTN_REVS, callback_data="revs")], [B(T.BTN_PAY, callback_data="pay")], [B(T.BTN_MENU, callback_data="menu")]])
 
 
 def kb_offer():
@@ -240,6 +243,9 @@ async def go_src(ctx, update_or_none, chat_id, uid, src):
         await funnel_intensive(ctx, chat_id)
     elif src == "site":
         await funnel_site(ctx, chat_id)
+    elif src == "video":  # 16.11: кодове слово БУНТ
+        await ctx.bot.send_message(chat_id, "Вітаю! ❤ Ось обіцяне відео 👇", reply_markup=bottom(ctx, uid))
+        await vidrev.send_video(ctx, chat_id, uid)
     elif src == "test":
         await ctx.bot.send_message(chat_id, "Вітаю! ❤", reply_markup=bottom(ctx, uid))
         await quiz.start(ctx.bot, chat_id)
@@ -251,13 +257,13 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     u = update.effective_user
     arg = (ctx.args[0].lower() if ctx.args else "")
     src = ("hochu" if arg in ("hochu", "xochu", "intensive") else "test" if arg in ("test", "diagnostyka", "diag")
-           else "site" if arg == "site" else "start")
+           else "site" if arg == "site" else "video" if arg in ("bunt", "video", "vid") else "start")
     new = db.get_user(u.id) is None
     db.upsert_user(u, src)
     crm.log_ev(u.id, "start" if new else "restart", src)
-    crm.log_ev(u.id, {"hochu": "int_full", "site": "site", "test": "quiz_open"}.get(src, "hello"))
+    crm.log_ev(u.id, {"hochu": "int_full", "site": "site", "test": "quiz_open", "video": "video"}.get(src, "hello"))
     if new:
-        await notify_admins(ctx, f"👋 Новий підписник ({ {'hochu': 'кодове слово ХОЧУ', 'test': 'діагностика', 'site': 'з сайту'}.get(src, 'старт') }): {who(u)}")
+        await notify_admins(ctx, f"👋 Новий підписник ({ {'hochu': 'кодове слово ХОЧУ', 'test': 'діагностика', 'site': 'з сайту', 'video': 'кодове слово БУНТ'}.get(src, 'старт') }): {who(u)}")
     if await gate(ctx, u.id, update.effective_chat.id, src):
         return
     await go_src(ctx, update, update.effective_chat.id, u.id, src)
@@ -399,7 +405,7 @@ async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         if is_admin(u.id):
             await crm.on_cb(q, ctx, data)
         return
-    if data in ("menu", "int", "ask") or data.startswith(("sec:", "soon:")):
+    if data in ("menu", "int", "ask", "vid", "revs") or data.startswith(("sec:", "soon:")):
         crm.log_ev(u.id, data)
     if data in ("menu", "int") and ctx.user_data.get("hid"):   # людина вийшла з тесту чи питання кнопкою: повертаємо меню
         await show_bottom(ctx, chat)
@@ -421,6 +427,10 @@ async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await ctx.bot.send_message(chat, T.START_2, reply_markup=kb_start(is_admin(u.id)), parse_mode="HTML")
     elif data == "int":
         await intensive_card(ctx, chat)
+    elif data == "vid":
+        await vidrev.send_video(ctx, chat, u.id)
+    elif data == "revs":
+        await vidrev.send_reviews(ctx, chat)
     elif data.startswith("sec:"):
         code = data.split(":", 1)[1]
         if code in SECTIONS:
@@ -451,13 +461,17 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         code = BOTTOM[txt]
         chat = update.effective_chat.id
         if code != "pay":
-            crm.log_ev(u.id, "menu" if code == "home" else f"sec:{code}")
+            crm.log_ev(u.id, "menu" if code == "home" else {"video": "vid", "reviews": "revs"}.get(code, f"sec:{code}"))
         if code == "home":
             await update.message.reply_text(T.START_2, reply_markup=kb_start(is_admin(u.id)), parse_mode="HTML")
             if ctx.user_data.get("hid"):
                 await show_bottom(ctx, chat)
         elif code == "pay":
             await start_pay(ctx, u, chat)
+        elif code == "video":
+            await vidrev.send_video(ctx, chat, u.id)
+        elif code == "reviews":
+            await vidrev.send_reviews(ctx, chat)
         else:
             await show_section(ctx, chat, code)
         return
@@ -510,7 +524,8 @@ async def cmd_help(update: Update, ctx):
         "/grupa канал інтенсиву (у самому каналі чи групі: підключити)\n\n"
         f"Звичайний старт: https://t.me/{ctx.bot.username}\n"
         f"Кодове слово ХОЧУ, вся інформація (для ManyChat): https://t.me/{ctx.bot.username}?start=hochu\n"
-        f"Діагностика кишківника (для ManyChat): https://t.me/{ctx.bot.username}?start=test")
+        f"Діагностика кишківника (для ManyChat): https://t.me/{ctx.bot.username}?start=test\n"
+        f"Кодове слово БУНТ, відео «Чому бунтує кишківник» (для ManyChat): https://t.me/{ctx.bot.username}?start=bunt")
 
 
 async def cmd_crm(update: Update, ctx):
@@ -550,9 +565,10 @@ def main():
     db.init()
     wfp.init_table()
     crm.init()
+    vidrev.init()
     crm.setup(
         admins=C.ADMIN_IDS,
-        src={"hochu": "кодове слово ХОЧУ", "test": "діагностика", "site": "сайт", "start": "напряму"},
+        src={"hochu": "кодове слово ХОЧУ", "test": "діагностика", "site": "сайт", "video": "кодове слово БУНТ", "start": "напряму"},
         labels={"start": "Старт", "restart": "Повторний старт", "hello": "Привітання", "int_full": "Вся інформація (ХОЧУ)",
                 "site": "Прийшли з сайту", "menu": "Головне меню", "int": "Картка інтенсиву",
                 "sec:author": "Про Валентину", "sec:launch": "Про запуск", "sec:for": "Для кого", "sec:program": "Програма",
@@ -561,6 +577,7 @@ def main():
                 "msg": "Написали в чат", "pay_choice": "Вибір оплати (бачили ціну)", "invoice": "Взяли посилання на оплату",
                 "paid": "Оплатили", "quiz_open": "Відкрили діагностику", "quiz_go": "Почали діагностику",
                 "quiz_q*": "Діагностика, на середині", "quiz_done": "Завершили діагностику",
+                "video": "Прийшли за відео (БУНТ)", "vid": "Дивились відео", "revs": "Дивились відгуки",
                 "blocked": "Заблокували агента", "unblocked": "Розблокували агента"},
         funnel=[("прийшли", ["start", "restart"]),
                 ("дивились інтенсив", ["int", "int_full", "site", "sec:"]),
@@ -591,6 +608,7 @@ def main():
     app.job_queue.run_repeating(__import__("instaposts").job, interval=300, first=200)  # 14.11: щодня о 9:00 до 18.11
     app.job_queue.run_once(__import__("instaposts").fix_k2_job, when=90)  # 15.11: дослати опис до каруселі k2
     app.job_queue.run_repeating(__import__("dozhim").job, interval=300, first=180)  # 13.11: дожими інтенсиву (dozhim.py)
+    app.job_queue.run_repeating(vidrev.followup_job, interval=300, first=240)  # 16.11: нагадування через 2 год після відео
     app.job_queue.run_repeating(crm.daily_job, interval=300, first=90)  # 10.11: звіт адмінам щоранку о 9:00
     log.info("Агента запущено")
     app.run_polling(allowed_updates=Update.ALL_TYPES)

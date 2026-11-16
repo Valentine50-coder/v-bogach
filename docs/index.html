@@ -141,6 +141,26 @@ footer.foot{margin-bottom:110px}
   .sticky .t span{min-width:44px;font-size:18px}
   .sticky .btn{font-size:15px;padding:12px 26px}
 }
+
+/* 16.11: відео і відгуки */
+.yt{position:relative;display:block;width:100%;aspect-ratio:16/9;border-radius:20px;overflow:hidden;background:#000;border:0;padding:0;cursor:pointer}
+.yt img{width:100%;height:100%;object-fit:cover;display:block}
+.yt .play{position:absolute;left:50%;top:50%;width:76px;height:76px;margin:-38px 0 0 -38px;border-radius:50%;background:var(--red);box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.yt .play:after{content:"";position:absolute;left:30px;top:22px;border-style:solid;border-width:16px 0 16px 26px;border-color:transparent transparent transparent #fff}
+.yt iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.revs{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 10px;-webkit-overflow-scrolling:touch}
+.revs button{flex:0 0 78%;scroll-snap-align:center;border:0;padding:0;background:none;border-radius:18px;overflow:hidden;box-shadow:0 6px 16px rgba(33,58,116,.14);cursor:zoom-in}
+.revs img{width:100%;display:block}
+.revnote{font-size:13px;color:#5b6478;margin-top:10px}
+.lb-ov{position:fixed;inset:0;background:rgba(10,16,32,.88);display:none;align-items:center;justify-content:center;z-index:99;padding:16px}
+.lb-ov.on{display:flex}
+.lb-ov img{max-width:100%;max-height:92vh;border-radius:14px}
+@media (min-width:980px){
+  .s-video{grid-column:1/-1;order:5} .s-revs{grid-column:1/-1;order:10}
+  .s-video .yt{max-width:860px;margin:0 auto}
+  .revs{display:grid;grid-template-columns:repeat(3,1fr);overflow:visible}
+  .revs button{flex:none}
+}
 </style>
 </head>
 <body>
@@ -165,6 +185,14 @@ footer.foot{margin-bottom:110px}
       Наш кишківник - це <span class="em">«другий мозок»</span> 🧠
       <span class="rest" style="font-weight:600">Від його роботи напряму залежать наш імунітет, рівень енергії, гормональний баланс, чиста шкіра та навіть гарний настрій. Якщо ви втомилися від постійного дискомфорту та хочете жити з легкістю в ШКТ, цей онлайн-інтенсив створений для вас.</span>
     </div>
+  </section>
+
+  <section class="s-video card" id="video">
+    <h2 class="big">ЧОМУ БУНТУЄ КИШКІВНИК</h2>
+    <p>У цьому відео я розповідаю про основні причини збоїв у кишківнику і покроковий план, як навести лад у нашому «другому мозку» 🧠</p>
+    <button class="yt" type="button" aria-label="Дивитися відео «Чому бунтує кишківник»" onclick="this.innerHTML='<iframe src=&quot;https://www.youtube-nocookie.com/embed/l-5a59E9HHk?autoplay=1&amp;rel=0&quot; allow=&quot;autoplay; encrypted-media; picture-in-picture&quot; allowfullscreen title=&quot;Чому бунтує кишківник&quot;></iframe>';this.onclick=null">
+      <img src="img/bunt.jpg" alt="Валентина Швець: чому бунтує кишківник" loading="lazy"><span class="play"></span>
+    </button>
   </section>
 
   <div class="cta c1"><a class="btn buy" href="#vartist">Взяти участь</a></div>
@@ -272,6 +300,19 @@ footer.foot{margin-bottom:110px}
     </div>
   </section>
 
+  <section class="s-revs card" id="vidguky">
+    <h2 class="big">ВІДГУКИ МОЇХ КЛІЄНТІВ</h2>
+    <div class="revs">
+      <button type="button" onclick="lbOpen(this)"><img src="img/v1.jpg" alt="Відгук клієнтки 1" loading="lazy"></button>
+      <button type="button" onclick="lbOpen(this)"><img src="img/v2.jpg" alt="Відгук клієнтки 2" loading="lazy"></button>
+      <button type="button" onclick="lbOpen(this)"><img src="img/v3.jpg" alt="Відгук клієнтки 3" loading="lazy"></button>
+      <button type="button" onclick="lbOpen(this)"><img src="img/v4.jpg" alt="Відгук клієнтки 4" loading="lazy"></button>
+      <button type="button" onclick="lbOpen(this)"><img src="img/v5.jpg" alt="Відгук клієнтки 5" loading="lazy"></button>
+      <button type="button" onclick="lbOpen(this)"><img src="img/v6.jpg" alt="Відгук клієнтки 6" loading="lazy"></button>
+    </div>
+    <p class="revnote">Результати в кожного свої. Змінювати дози ліків можна тільки разом з лікарем.</p>
+  </section>
+
   <section class="s-price card price" id="vartist">
     <div class="box facts" aria-label="Коротко про інтенсив">
       <div><span>Старт</span><strong>24.11</strong></div>
@@ -318,5 +359,7 @@ var PAY_URL = "https://t.me/valentina_shvets_bot?start=site";
 if (PAY_URL) { document.querySelectorAll(".buy").forEach(function (a) { a.href = PAY_URL; a.target = "_blank"; a.rel = "noopener"; }); }
 </script>
 
+<div class="lb-ov" id="lb" onclick="this.classList.remove('on')"><img alt="Відгук"></div>
+<script>function lbOpen(b){var o=document.getElementById('lb');o.querySelector('img').src=b.querySelector('img').src;o.classList.add('on')}</script>
 </body>
 </html>
