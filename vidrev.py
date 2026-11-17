@@ -1,6 +1,6 @@
 """16.11.2026: відео Валентини «Чому бунтує кишківник» і «Відгуки моїх клієнтів».
 
-Відео: media/buntuye.mp4 (те саме, що https://youtu.be/l-5a59E9HHk). Вхід: ?start=bunt (кодове слово БУНТ у ManyChat),
+Відео: media/buntuye.mp4 (17.11 замінено на нову версію від Валентини, стара на YouTube l-5a59E9HHk вийшла англійською; кеш vid_fid2). Вхід: ?start=bunt (кодове слово БУНТ у ManyChat),
 кнопка в нижньому меню і в головному меню. Хто не оплатив інтенсив, через 2 год отримує одне нагадування (9:00-21:00 Київ).
 Відгуки: images/vidguky/v1..v6.jpg одним альбомом + текст з приміткою про ліки, кнопки інтенсиву.
 file_id відео і фото кешуються у kv (vid_fid, rev_fids). Нагадування: таблиця vid_fu (uid, at, sent).
@@ -21,7 +21,7 @@ log = logging.getLogger("vidrev")
 HERE = os.path.dirname(os.path.abspath(__file__))
 VIDEO = os.path.join(HERE, "media", "buntuye.mp4")
 REVS = [os.path.join(HERE, "images", "vidguky", f"v{i}.jpg") for i in range(1, 7)]
-YOUTUBE = "https://youtu.be/l-5a59E9HHk"
+YOUTUBE = "https://valentine50-coder.github.io/v-bogach/#video"  # 17.11: YouTube-версія вийшла англійською, запасне посилання на сайт
 FU_SEC = 2 * 3600
 
 BTN_VIDEO = "🎥 Відео: чому бунтує кишківник"
@@ -35,7 +35,7 @@ VIDEO_CAP = ("🎥 <b>Чому бунтує кишківник</b>\n\n"
 REV_TEXT = ("💬 <b>Відгуки моїх клієнтів</b>\n\n"
             "Це справжні повідомлення людей, з якими ми відновлювали кишківник: менше здуття, регулярний стілець, "
             "чистіша шкіра, кращі аналізи.\n\n"
-            "<i>Результати в кожного свої. Змінювати дози ліків можна тільки разом з лікарем.</i>")
+            "<i>Результати в кожного свої. Тут можуть бути й ваші 😉</i>")
 FOLLOW = ("Ви вже подивились відео «Чому бунтує кишківник»? ❤\n\n"
           "На інтенсиві ми пройдемо цей шлях разом, крок за кроком 🎯\n\n"
           "Кількість місць обмежена ‼️")
@@ -55,7 +55,7 @@ def kb_revs():
 
 
 async def send_video(ctx, chat_id, uid=None):
-    fid = db.flag_get("vid_fid")
+    fid = db.flag_get("vid_fid2")
     try:
         if fid:
             m = await ctx.bot.send_video(chat_id, fid, caption=VIDEO_CAP, parse_mode="HTML", reply_markup=kb_video())
@@ -65,7 +65,7 @@ async def send_video(ctx, chat_id, uid=None):
                                              supports_streaming=True, width=1280, height=720,
                                              read_timeout=180, write_timeout=180)
             if m and m.video:
-                db.flag_set("vid_fid", m.video.file_id)
+                db.flag_set("vid_fid2", m.video.file_id)
     except Exception as e:
         log.warning("video %s: %s", chat_id, e)
         await ctx.bot.send_message(chat_id, VIDEO_CAP + f"\n\n{YOUTUBE}", parse_mode="HTML", reply_markup=kb_video())
