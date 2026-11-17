@@ -53,3 +53,6 @@
 - vidrev.py: відео media/buntuye.mp4 («Чому бунтує кишківник», те саме що youtu.be/l-5a59E9HHk, стиснуте до ~21 МБ), ?start=bunt (кодове слово БУНТ; також video, vid) → src "video" після воріт каналу; кнопки vid/revs у головному меню, BTN_BOTTOM коди video/reviews, «Відгуки» в kb_int_menu. file_id у kv vid_fid / rev_fids. Нагадування через 2 год тим, хто не оплатив (таблиця vid_fu, 9:00-21:00, один раз).
 - Відгуки: images/vidguky/v1..v6.jpg (здуття, закрепи, грибок, шкіра, АІТ, антидепресанти), текст з приміткою про ліки.
 - Сайт docs/index.html: секція .s-video (кнопка-заставка docs/img/bunt.jpg → iframe youtube-nocookie) і .s-revs (docs/img/v1..v6.jpg, гортання / сітка 3×2 на ≥980px, лайтбокс #lb).
+
+## Ціна до 23.11 (17.11)
+- За словом Тетяни ціна незмінна (1444) до кінця запису: INTENSIVE_PRICE_NOTE «до 23.11», card_terms.jpg перезібрано (scratchpad vcards/terms.html), сайт: «до 23.11», відлік до 2026-11-23T23:59:59+02:00. Дожими 23.11 (l1-l3) тепер не суперечать ціні.
