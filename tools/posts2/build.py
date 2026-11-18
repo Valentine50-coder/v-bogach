@@ -38,8 +38,9 @@ def doc(body, cls=""):
 
 def cover(tag, title, sub, img, pos="center"):
     if img in ("val1.jpg", "val2.jpg"):
-        cut = img.replace(".jpg", "_cut.png")
-        return doc(f"""<img src="{cut}" style="position:absolute;right:-10px;bottom:0;height:820px">
+        # 18.11: val1 вирізана з фону; val2 (сидить) цілим фото в рамці, без обрізання (вирізання з'їдало частину руки)
+        cut = '<img src="val1_cut.png" style="position:absolute;right:-10px;bottom:0;height:820px">' if img == "val1.jpg" else '<div class="ph" style="right:60px;bottom:90px;width:500px;height:738px"><img src="val2.jpg"></div>'
+        return doc(f"""{cut}
 <div style="position:absolute;left:60px;right:60px;top:60px;display:flex;flex-direction:column;gap:26px">
 <div><span class="tag f">{tag}</span></div><h1>{title}</h1><div class="sub" style="width:480px">{sub}</div></div>
 <div class="foot">{NAME}</div>""")
@@ -72,7 +73,7 @@ def cta(n, total, tag, title, text, word, after, img):
 <div style="position:absolute;left:60px;top:800px;font-size:30px;color:#e3f3e8">Напишіть у коментарях слово</div>
 <div style="position:absolute;left:60px;top:860px"><span class="word">{word}</span></div>
 <div style="position:absolute;left:60px;top:1010px;font-size:30px;color:#e3f3e8">{after} ❤</div>
-<img src="{img.replace('.jpg', '_cut.png')}" style="position:absolute;right:-30px;bottom:0;height:780px">
+{'<img src="val1_cut.png" style="position:absolute;right:-30px;bottom:0;height:780px">' if img == "val1.jpg" else '<div class="ph" style="right:50px;top:330px;width:420px;height:620px"><img src="val2.jpg"></div>'}
 
 <div class="disc">Інформація має ознайомчий характер і не замінює консультації спеціаліста</div>""", "cta")
 

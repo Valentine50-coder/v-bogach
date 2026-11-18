@@ -161,3 +161,19 @@ async def fix_k2_job(context):
             await context.bot.send_message(a, cap)
         except Exception as e:
             log.warning("instapost fix k2 %s: %s", a, e)
+
+
+async def fix_k6_job(context):
+    """18.11: якщо k6 уже пішла зі старим вирізаним фото (де сидить), один раз дослати виправлену (kv ip_k6fix)."""
+    if db.flag_get("ip_k6fix") == "1" or datetime.now(TZ).strftime("%Y-%m-%d") != "2026-11-18":
+        return
+    db.flag_set("ip_k6fix", "1")
+    if db.flag_get("ip:k6") != "1":
+        return  # ще не надсилали: звичайний job надішле вже нову версію
+    key, _, title, cap = POSTS[5]
+    for a in C.ADMIN_IDS:
+        try:
+            await context.bot.send_message(a, "🔄 <b>Виправлена версія сьогоднішньої каруселі</b>: фото на обкладинці тепер ціле. Публікуйте, будь ласка, цю 😉", parse_mode="HTML")
+        except Exception as e:
+            log.warning("instapost fix k6 %s: %s", a, e)
+    await _to_admins(context.bot, key, title, cap)
