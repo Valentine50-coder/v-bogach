@@ -27,7 +27,7 @@ em{{font-family:Lora;font-style:italic;font-weight:600;color:{P};letter-spacing:
 .ph img{{width:100%;height:100%;object-fit:cover}}
 .cta{{background:linear-gradient(160deg,#145c3b,#0b2f22);color:#fff}}
 .word{{display:inline-block;background:#fff;color:{P};font-weight:900;font-size:76px;letter-spacing:2px;padding:14px 40px;border-radius:24px}}
-.disc{{position:absolute;left:60px;right:60px;bottom:40px;font-size:20px;opacity:.75}}
+.disc{{position:absolute;left:60px;width:520px;bottom:40px;font-size:20px;opacity:.75}}
 """
 NAME = "Валентина Швець · нутриціолог, health-коуч"
 
@@ -37,6 +37,12 @@ def doc(body, cls=""):
 
 
 def cover(tag, title, sub, img, pos="center"):
+    if img in ("val1.jpg", "val2.jpg"):
+        cut = img.replace(".jpg", "_cut.png")
+        return doc(f"""<img src="{cut}" style="position:absolute;right:-10px;bottom:0;height:820px">
+<div style="position:absolute;left:60px;right:60px;top:60px;display:flex;flex-direction:column;gap:26px">
+<div><span class="tag f">{tag}</span></div><h1>{title}</h1><div class="sub" style="width:480px">{sub}</div></div>
+<div class="foot">{NAME}</div>""")
     return doc(f"""<div style="position:absolute;left:60px;right:60px;top:60px;bottom:100px;display:flex;flex-direction:column;gap:26px">
 <div><span class="tag f">{tag}</span></div><h1>{title}</h1><div class="sub">{sub}</div>
 <div class="ph" style="position:relative;flex:1;min-height:380px"><img src="{img}" style="object-position:{pos}"></div></div>
@@ -66,7 +72,8 @@ def cta(n, total, tag, title, text, word, after, img):
 <div style="position:absolute;left:60px;top:800px;font-size:30px;color:#e3f3e8">Напишіть у коментарях слово</div>
 <div style="position:absolute;left:60px;top:860px"><span class="word">{word}</span></div>
 <div style="position:absolute;left:60px;top:1010px;font-size:30px;color:#e3f3e8">{after} ❤</div>
-<div class="ph" style="right:50px;top:300px;width:360px;height:560px"><img src="{img}" style="object-position:center 20%"></div>
+<img src="{img.replace('.jpg', '_cut.png')}" style="position:absolute;right:-30px;bottom:0;height:780px">
+
 <div class="disc">Інформація має ознайомчий характер і не замінює консультації спеціаліста</div>""", "cta")
 
 
