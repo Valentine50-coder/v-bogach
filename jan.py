@@ -71,6 +71,10 @@ QUESTIONS = [
     ("start", "📅 Коли старт групи на січень? Напишіть дату (наприклад <code>12 січня</code>)."),
     ("rest", "💳 Ті, хто забронював місце за 350 грн, коли доплачують решту (400 грн для перших 20)? "
              "Напишіть своїми словами, наприклад «за тиждень до старту»."),
+    # 19.11: для каруселі 25.11 (зараз у ній простий рецепт вівсянки на ніч; якщо Валентина надішле свій, перезбираємо)
+    ("recipe", "🥣 Для каруселі 25.11 «Сніданок, який любить ваш кишківник»: напишіть свій улюблений рецепт сніданку "
+               "(продукти і як готуєте). Якщо хочете лишити простий рецепт вівсянки на ніч з льоном і ягодами, напишіть «лишаємо». "
+               "Фото свого сніданку чи ранку (2-3 шт.) можна надіслати Тетяні."),
 ]
 
 
@@ -259,6 +263,23 @@ async def setup_job(ctx):
     db.flag_set("jan_wait", code)
 
 
+async def more_job(ctx):
+    """19.11: нові питання (рецепт), якщо перші три вже відповіли до оновлення. Один раз."""
+    if db.flag_get("jan_setup2") == "1" or db.flag_get("jan_wait"):
+        return
+    db.flag_set("jan_setup2", "1")
+    code, text = _next_q()
+    if not code:
+        return
+    for a in C.ADMIN_IDS:
+        try:
+            await ctx.bot.send_message(a, "🙋‍♀️ <b>Ще одне питання для каруселей</b>\n\nВідповідайте просто повідомленням у цей чат.\n\n" + text,
+                                       parse_mode="HTML")
+        except Exception as e:
+            log.warning("jan more %s: %s", a, e)
+    db.flag_set("jan_wait", code)
+
+
 async def on_admin_text(update, ctx, notify_admins):
     """True, якщо текст адміна був відповіддю на питання."""
     code = db.flag_get("jan_wait")
@@ -274,7 +295,7 @@ async def on_admin_text(update, ctx, notify_admins):
         txt = digits
     db.flag_set(f"jan_q:{code}", txt)
     ans = {"cons": f"ціна консультації {txt} грн (зі знижкою {cons_amount()} грн до 30.11)", "start": f"старт січневої групи: {txt}",
-           "rest": f"доплата після броні: {txt}"}[code]
+           "rest": f"доплата після броні: {txt}", "recipe": f"рецепт для каруселі 25.11: {txt}"}.get(code, txt)
     await notify_admins(ctx, f"📝 Записала відповідь: {ans}")
     nxt, text = _next_q()
     if nxt:

@@ -629,6 +629,7 @@ def main():
     app.add_error_handler(on_error)
     app.job_queue.run_repeating(paid_job, interval=60, first=45)
     app.job_queue.run_once(jan.setup_job, when=70)  # 19.11: питання Валентині (ціна консультації, старт, доплата)
+    app.job_queue.run_once(jan.more_job, when=90)  # 19.11: питання про рецепт для каруселі 25.11
     app.job_queue.run_once(jan.announce_preview_job, when=80)  # 19.11: прев'ю розсилки «січень + консультація»
     app.job_queue.run_repeating(gate_job, interval=600, first=60)  # 11.11: «канал підключено» адмінам
     app.job_queue.run_repeating(install_job, interval=3600, first=120)
