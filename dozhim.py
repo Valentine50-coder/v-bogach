@@ -64,7 +64,8 @@ def _blocked():
 
 
 def _kb():
-    return M([[B(D.BTN_MORE, callback_data="int")], [B(D.BTN_ASK, callback_data="ask")]])
+    return M([[B(D.BTN_MORE, callback_data=getattr(D, "CB_MORE", "int"))]]  # 19.11: консультація + група на січень
+             + ([[B(D.BTN_JAN, callback_data="jan")]] if hasattr(D, "BTN_JAN") else []) + [[B(D.BTN_ASK, callback_data="ask")]])
 
 
 async def job(ctx):

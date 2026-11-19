@@ -13,6 +13,7 @@ import config as C
 import changelog
 import db
 import groups
+import jan
 import quiz
 import vidrev
 import crm
@@ -34,7 +35,7 @@ def kb_start(adm=False):
             [B(quiz.BTN_MENU, callback_data="qz:start")],
             [B(vidrev.BTN_VIDEO, callback_data="vid")],  # 16.11
             [B(vidrev.BTN_REVS, callback_data="revs")]]
-    rows += [[B(text, callback_data=f"soon:{code}")] for text, code in C.START_BUTTONS]
+    rows += [[B(text, callback_data="cons" if code == "consult" else f"soon:{code}")] for text, code in C.START_BUTTONS]  # 19.11: консультації
     rows.append([B(T.BTN_CHANNEL, url=C.CHANNEL_URL)])
     rows.append([kb_ask()])
     if adm:
@@ -86,12 +87,12 @@ async def show_bottom(ctx, chat_id, text=None):
 
 BOTTOM = {t: code for row in T.BTN_BOTTOM for t, code in row}
 BOTTOM.update({"Про Валентину": "author", "Про запуск": "launch", "🎯 Для кого": "for", "Програма": "program",  # 12.11: старі назви
-               "🎁 Що ви отримаєте": "get", "Умови і ціна": "terms", "💳 Оплатити": "pay", "🏠 Меню": "home"})
+               "🎁 Що ви отримаєте": "get", "Умови і ціна": "terms", "💳 Оплатити": "pay", "💳 ОПЛАТИТИ": "pay", "🏠 Меню": "home"})
 
 
 def kb_intensive():
     return M([[B(T.BTN_PAY, callback_data="pay")],
-              [B(T.BTN_INSTALL, callback_data="install")],
+              [B(jan.BTN_CONS, callback_data="cons")],  # 19.11: замість розтермінування
               [B(T.BTN_QUESTION, callback_data="ask")],
               [B(T.BTN_MENU, callback_data="menu")]])
 
@@ -114,11 +115,13 @@ async def show_section(ctx, chat_id, code):
 
 def kb_int_menu():
     s = [[B(v[0], callback_data=f"sec:{code}")] for code, v in SECTIONS.items() if code != "launch"]
-    return M(s + [[B(vidrev.BTN_REVS, callback_data="revs")], [B(T.BTN_PAY, callback_data="pay")], [B(T.BTN_MENU, callback_data="menu")]])
+    return M(s + [[B(vidrev.BTN_REVS, callback_data="revs")], [B(T.BTN_PAY, callback_data="pay")],
+                  [B(jan.BTN_CONS, callback_data="cons")], [B(T.BTN_MENU, callback_data="menu")]])
 
 
 def kb_offer():
-    return M([[B(T.BTN_PAY, callback_data="pay")],
+    return M([[B(jan.BTN_CONS, callback_data="cons")],  # 19.11: нова стратегія
+              [B(jan.BTN_JAN, callback_data="jan")],
               [B("Детальніше про інтенсив", callback_data="int")],
               [kb_ask()],
               [B(T.BTN_MENU, callback_data="menu")]])
@@ -126,6 +129,7 @@ def kb_offer():
 
 def kb_section():
     return M([[B(T.BTN_PAY, callback_data="pay")],
+              [B(jan.BTN_CONS, callback_data="cons")],
               [kb_ask()],
               [B(T.BTN_BACK_INT, callback_data="int")],
               [B(T.BTN_MENU, callback_data="menu")]])
@@ -246,6 +250,12 @@ async def go_src(ctx, update_or_none, chat_id, uid, src):
     elif src == "video":  # 16.11: кодове слово БУНТ
         await ctx.bot.send_message(chat_id, "Вітаю! ❤ Ось обіцяне відео 👇", reply_markup=bottom(ctx, uid))
         await vidrev.send_video(ctx, chat_id, uid)
+    elif src == "cons":  # 19.11: кодове слово КИШКІВНИК → консультація
+        await ctx.bot.send_message(chat_id, "Вітаю! ❤", reply_markup=bottom(ctx, uid))
+        await jan.show_cons(ctx, chat_id, [[B(jan.BTN_JAN, callback_data="jan")]])
+    elif src == "jan":
+        await ctx.bot.send_message(chat_id, "Вітаю! ❤", reply_markup=bottom(ctx, uid))
+        await jan.show_jan(ctx, chat_id, [])
     elif src == "test":
         await ctx.bot.send_message(chat_id, "Вітаю! ❤", reply_markup=bottom(ctx, uid))
         await quiz.start(ctx.bot, chat_id)
@@ -257,13 +267,14 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     u = update.effective_user
     arg = (ctx.args[0].lower() if ctx.args else "")
     src = ("hochu" if arg in ("hochu", "xochu", "intensive") else "test" if arg in ("test", "diagnostyka", "diag")
-           else "site" if arg == "site" else "video" if arg in ("bunt", "video", "vid") else "start")
+           else "site" if arg == "site" else "video" if arg in ("bunt", "video", "vid")
+           else "cons" if arg in ("cons", "kons", "konsultatsiya", "kyshkivnyk") else "jan" if arg in ("jan", "sichen") else "start")
     new = db.get_user(u.id) is None
     db.upsert_user(u, src)
     crm.log_ev(u.id, "start" if new else "restart", src)
     crm.log_ev(u.id, {"hochu": "int_full", "site": "site", "test": "quiz_open", "video": "video"}.get(src, "hello"))
     if new:
-        await notify_admins(ctx, f"👋 Новий підписник ({ {'hochu': 'кодове слово ХОЧУ', 'test': 'діагностика', 'site': 'з сайту', 'video': 'кодове слово БУНТ'}.get(src, 'старт') }): {who(u)}")
+        await notify_admins(ctx, f"👋 Новий підписник ({ {'hochu': 'кодове слово ХОЧУ', 'test': 'діагностика', 'site': 'з сайту', 'video': 'кодове слово БУНТ', 'cons': 'консультація (КИШКІВНИК)', 'jan': 'група на січень'}.get(src, 'старт') }): {who(u)}")
     if await gate(ctx, u.id, update.effective_chat.id, src):
         return
     await go_src(ctx, update, update.effective_chat.id, u.id, src)
@@ -290,6 +301,8 @@ async def paid_job(ctx):
     async def on_paid(uid, kind, ref, amount, cur):
         if kind == "test":
             await notify_admins(ctx, f"✅ Тестова оплата пройшла: {amount} {cur}. Автоплатіж працює, доступ нікому не відкрито.")
+            return
+        if await jan.on_paid(ctx, uid, kind, amount, cur, notify_admins):  # 19.11: січень і консультація
             return
         u = db.get_user(uid)
         name = (u["name"] if u else "") + (f" @{u['username']}" if u and u["username"] else "")
@@ -325,13 +338,10 @@ async def paid_job(ctx):
 
 
 async def start_pay(ctx, u, chat):
-    """Вибір: оплатити все або розтермінування."""
+    """19.11: вибір: бронь 350 або повністю (750 для перших 20, далі 1444), поруч консультація (jan.py)."""
     db.set_field(u.id, "asked_int", 1)
     crm.log_ev(u.id, "pay_choice")
-    await ctx.bot.send_message(chat, T.PAY_CHOICE + T.URGENT, parse_mode="HTML", reply_markup=M([
-        [B(T.BTN_PAY_FULL, callback_data="payfull")],
-        [B(T.BTN_PAY_PARTS, callback_data="paypart:1")],
-        [B(T.BTN_MENU, callback_data="menu")]]))
+    await jan.pay_choice(ctx, chat, [[B(T.BTN_MENU, callback_data="menu")]])
 
 
 async def make_invoice(ctx, u, chat, kind, amount, name, text):
@@ -344,7 +354,7 @@ async def make_invoice(ctx, u, chat, kind, amount, name, text):
     else:
         await ctx.bot.send_message(chat, T.PAY_MANUAL)
         await notify_admins(ctx, f"⚠️ Автооплата не спрацювала ({wfp.LAST_ERROR or 'причина невідома'}). Заявка: {name}, {who(u)}",
-                            M([[B("Відкрити доступ", callback_data=f"grant:{u.id}")]]))
+                            M([[B("Відкрити доступ", callback_data=f"grant:{u.id}")]]) if kind.startswith("int") else None)
 
 
 async def pay_full(ctx, u, chat):
@@ -405,6 +415,11 @@ async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         if is_admin(u.id):
             await crm.on_cb(q, ctx, data)
         return
+    if data == "jn:go":  # 19.11: розсилка «січень + консультація» (тільки адмін)
+        if is_admin(u.id):
+            await q.edit_message_reply_markup(None)
+            await jan.announce_go(ctx, chat, notify_admins)
+        return
     if data in ("menu", "int", "ask", "vid", "revs") or data.startswith(("sec:", "soon:")):
         crm.log_ev(u.id, data)
     if data in ("menu", "int") and ctx.user_data.get("hid"):   # людина вийшла з тесту чи питання кнопкою: повертаємо меню
@@ -439,12 +454,16 @@ async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await ctx.bot.send_message(chat, T.SOON, reply_markup=M([[B(T.BTN_INTENSIVE, callback_data="int")]]))
     elif data == "pay":
         await start_pay(ctx, u, chat)
-    elif data == "install":
+    elif data in ("install", "payfull") or (data == "paypart:1" and not db.flag_get(f"inst:{u.id}")):  # 19.11: старі кнопки → січень
         await start_pay(ctx, u, chat)
-    elif data == "payfull":
-        await pay_full(ctx, u, chat)
-    elif data.startswith("paypart:"):
+    elif data.startswith("paypart:"):  # доплати розтермінування листопадового інтенсиву лишаються
         await pay_part(ctx, u, chat, int(data.split(":")[1]))
+    elif data == "cons":
+        await jan.show_cons(ctx, chat, [[B(jan.BTN_JAN, callback_data="jan")], [B(T.BTN_MENU, callback_data="menu")]])
+    elif data == "jan":
+        await jan.show_jan(ctx, chat, [[B(T.BTN_MENU, callback_data="menu")]])
+    elif data.startswith("jn:"):
+        await jan.on_cb(ctx, u, chat, data, make_invoice, notify_admins, who)
     elif data == "ask":
         ctx.user_data["ask"] = True
         await ctx.bot.send_message(chat, T.QUESTION, reply_markup=hide(ctx))
@@ -468,12 +487,16 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 await show_bottom(ctx, chat)
         elif code == "pay":
             await start_pay(ctx, u, chat)
+        elif code == "cons":
+            await jan.show_cons(ctx, chat, [[B(jan.BTN_JAN, callback_data="jan")]])
         elif code == "video":
             await vidrev.send_video(ctx, chat, u.id)
         elif code == "reviews":
             await vidrev.send_reviews(ctx, chat)
         else:
             await show_section(ctx, chat, code)
+        return
+    if is_admin(u.id) and await jan.on_admin_text(update, ctx, notify_admins):  # 19.11: відповіді Валентини на питання
         return
     if is_admin(u.id) and await crm.on_admin_text(update, ctx):
         return
@@ -520,11 +543,13 @@ async def cmd_wfptest(update: Update, ctx):
 async def cmd_help(update: Update, ctx):
     if not is_admin(update.effective_user.id): return
     await update.message.reply_text(
-        "/crm люди, групи, розсилка, звіти\n/stats звіт\n/grant ID відкрити доступ вручну\n/wfptest перевірити WayForPay\n"
+        "/crm люди, групи, розсилка, звіти\n/kons ціна консультації, старт січня, місця\n/stats звіт\n/grant ID відкрити доступ вручну\n/wfptest перевірити WayForPay\n"
         "/grupa канал інтенсиву (у самому каналі чи групі: підключити)\n\n"
         f"Звичайний старт: https://t.me/{ctx.bot.username}\n"
         f"Кодове слово ХОЧУ, вся інформація (для ManyChat): https://t.me/{ctx.bot.username}?start=hochu\n"
         f"Діагностика кишківника (для ManyChat): https://t.me/{ctx.bot.username}?start=test\n"
+        f"Кодове слово КИШКІВНИК, консультація (для ManyChat): https://t.me/{ctx.bot.username}?start=cons\n"
+        f"Група на січень: https://t.me/{ctx.bot.username}?start=jan\n"
         f"Кодове слово БУНТ, відео «Чому бунтує кишківник» (для ManyChat): https://t.me/{ctx.bot.username}?start=bunt")
 
 
@@ -568,7 +593,7 @@ def main():
     vidrev.init()
     crm.setup(
         admins=C.ADMIN_IDS,
-        src={"hochu": "кодове слово ХОЧУ", "test": "діагностика", "site": "сайт", "video": "кодове слово БУНТ", "start": "напряму"},
+        src={"cons": "консультація (КИШКІВНИК)", "jan": "група на січень", "hochu": "кодове слово ХОЧУ", "test": "діагностика", "site": "сайт", "video": "кодове слово БУНТ", "start": "напряму"},
         labels={"start": "Старт", "restart": "Повторний старт", "hello": "Привітання", "int_full": "Вся інформація (ХОЧУ)",
                 "site": "Прийшли з сайту", "menu": "Головне меню", "int": "Картка інтенсиву",
                 "sec:author": "Про Валентину", "sec:launch": "Про запуск", "sec:for": "Для кого", "sec:program": "Програма",
@@ -577,7 +602,7 @@ def main():
                 "msg": "Написали в чат", "pay_choice": "Вибір оплати (бачили ціну)", "invoice": "Взяли посилання на оплату",
                 "paid": "Оплатили", "quiz_open": "Відкрили діагностику", "quiz_go": "Почали діагностику",
                 "quiz_q*": "Діагностика, на середині", "quiz_done": "Завершили діагностику",
-                "video": "Прийшли за відео (БУНТ)", "vid": "Дивились відео", "revs": "Дивились відгуки",
+                "video": "Прийшли за відео (БУНТ)", "jan": "Група на січень", "cons": "Консультація", "cons_req": "Заявка на консультацію", "vid": "Дивились відео", "revs": "Дивились відгуки",
                 "blocked": "Заблокували агента", "unblocked": "Розблокували агента"},
         funnel=[("прийшли", ["start", "restart"]),
                 ("дивились інтенсив", ["int", "int_full", "site", "sec:"]),
@@ -595,6 +620,7 @@ def main():
     app.add_handler(CommandHandler("wfptest", cmd_wfptest))
     app.add_handler(CommandHandler("help", cmd_help))
     app.add_handler(CommandHandler("crm", cmd_crm))
+    app.add_handler(CommandHandler("kons", jan.cmd_kons))  # 19.11: ціна консультації і відповіді Валентини
     app.add_handler(CommandHandler("grupa", groups.cmd_grupa))
     app.add_handler(ChatMemberHandler(groups.on_my_member, ChatMemberHandler.MY_CHAT_MEMBER))
     app.add_handler(ChatMemberHandler(crm.on_private_member, ChatMemberHandler.MY_CHAT_MEMBER), group=1)
@@ -602,6 +628,8 @@ def main():
     app.add_handler(MessageHandler(filters.ChatType.PRIVATE & filters.TEXT & ~filters.COMMAND, on_text))
     app.add_error_handler(on_error)
     app.job_queue.run_repeating(paid_job, interval=60, first=45)
+    app.job_queue.run_once(jan.setup_job, when=70)  # 19.11: питання Валентині (ціна консультації, старт, доплата)
+    app.job_queue.run_once(jan.announce_preview_job, when=80)  # 19.11: прев'ю розсилки «січень + консультація»
     app.job_queue.run_repeating(gate_job, interval=600, first=60)  # 11.11: «канал підключено» адмінам
     app.job_queue.run_repeating(install_job, interval=3600, first=120)
     app.job_queue.run_once(__import__("instaposts").intro_job, when=60)  # 14.11: каруселі для Instagram, перша одразу

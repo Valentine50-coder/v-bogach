@@ -76,10 +76,11 @@ RES = {
            "<i>Тепер головне зберегти цей стан і не пропустити перші дзвіночки.</i>\n\n"
            "Інтенсив саме для тих, хто хоче <b>завжди мати здоровий кишківник і профілактувати проблеми</b>."),
 }
-OFFER = ("<b>Що робити далі?</b>\n\n"
-         f"Запрошую вас на інтенсив <b>«{C.INTENSIVE_NAME}»</b>: старт <code>{C.INTENSIVE_START}</code>, "
-         f"<b>{C.INTENSIVE_LENGTH}</b> у Telegram-каналі з чатом підтримки.\n"
-         f"Вартість <code>{C.INTENSIVE_AMOUNT} грн</code> <i>({C.INTENSIVE_PRICE_NOTE})</i>, можна розтермінувати.\n\n"
+OFFER = ("<b>Що робити далі?</b>\n\n"  # 19.11: нова стратегія (jan.py)
+         "Якщо допомога потрібна <b>вже зараз</b>, запишіться на <b>індивідуальну консультацію</b> зі знижкою 50% "
+         "<i>(до кінця листопада)</i>: Валентина особисто розбере вашу ситуацію.\n\n"
+         f"А на інтенсив <b>«{C.INTENSIVE_NAME}»</b> зараз іде <b>запис у групу на січень</b>: бронювання <code>350 грн</code>, "
+         "повна вартість <code>750 грн</code> для перших 20 учасників 🔥\n\n"
          "<i>Ви отримаєте чіткий план відновлення саме для вашої ситуації.</i>")
 DISCLAIMER = "<i>Діагностика має інформаційний характер і не замінює консультації лікаря чи нутриціолога.</i>"
 ZONE_NAMES = {"zakrep": "закрепи", "meteo": "здуття/мікробіом", "skin": "шкіра/енергія", "nerv": "стрес/СРК", "ok": "все добре"}
@@ -150,8 +151,7 @@ async def on_cb(q, ctx, data, notify_admins, kb_offer, bottom_fn=None):
         await send_photo(ctx.bot, chat, img)
         await ctx.bot.send_message(chat, text, parse_mode="HTML",          # з першим результатом повертаємо меню
                                    reply_markup=bottom_fn() if (n == 0 and bottom_fn) else None)
-    import texts as T
-    await ctx.bot.send_message(chat, OFFER + T.URGENT + "\n\n" + DISCLAIMER, reply_markup=kb_offer(), parse_mode="HTML")
+    await ctx.bot.send_message(chat, OFFER + "\n\n" + DISCLAIMER, reply_markup=kb_offer(), parse_mode="HTML")
     u = q.from_user
     lines = [f"{k + 1}. {QUESTIONS[k][1][a][0]}" for k, a in enumerate(ans)]
     hot = " 🔥" if "ok" not in zones else ""
