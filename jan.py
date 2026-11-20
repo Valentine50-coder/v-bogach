@@ -84,7 +84,7 @@ def now():
 
 def cons_full():
     try:
-        return int(db.flag_get("cons_price") or 0)
+        return int(db.flag_get("cons_price") or 4500)  # 20.11 (Тетяна): зі знижкою 50% = 2250, отже повна 4500
     except ValueError:
         return 0
 
