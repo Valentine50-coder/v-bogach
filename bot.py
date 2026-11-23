@@ -647,6 +647,7 @@ def main():
     app.add_error_handler(on_error)
     app.job_queue.run_repeating(paid_job, interval=60, first=45)
     app.job_queue.run_once(__import__("vadsetup").job, when=150)  # 23.11: як підключити рекламу (flag vads_2311)
+    app.job_queue.run_once(__import__("vadsetup").note_job, when=200)  # 23.11: кабінет налаштовує Тетяна (flag vads_note)
     app.job_queue.run_once(jan.setup_job, when=70)  # 19.11: питання Валентині (ціна консультації, старт, доплата)
     app.job_queue.run_once(jan.more_job, when=90)  # 19.11: питання про рецепт для каруселі 25.11
     app.job_queue.run_once(jan.announce_preview_job, when=80)  # 19.11: прев'ю розсилки «січень + консультація»
