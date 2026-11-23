@@ -269,8 +269,17 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     src = ("hochu" if arg in ("hochu", "xochu", "intensive") else "test" if arg in ("test", "diagnostyka", "diag")
            else "site" if arg == "site" else "video" if arg in ("bunt", "video", "vid")
            else "cons" if arg in ("cons", "kons", "konsultatsiya", "kyshkivnyk") else "jan" if arg in ("jan", "sichen") else "start")
+    if arg.startswith("ads"):  # 23.11: людина з реклами Meta (annads.py)
+        src = "ads"
     new = db.get_user(u.id) is None
     db.upsert_user(u, src)
+    if src == "ads":
+        if arg[3:].isdigit():
+            db.flag_set(f"adr_var:{u.id}", arg[3:])
+        try:
+            await __import__("annads").notify_visit(ctx.bot, u, new)
+        except Exception as e:
+            log.warning("ads visit: %s", e)
     crm.log_ev(u.id, "start" if new else "restart", src)
     crm.log_ev(u.id, {"hochu": "int_full", "site": "site", "test": "quiz_open", "video": "video"}.get(src, "hello"))
     if new:
@@ -406,6 +415,10 @@ async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await ctx.bot.send_message(chat, T.GATE_OK, parse_mode="HTML")
         src = db.flag_get(f"gate_src:{u.id}") or "start"
         await go_src(ctx, None, chat, u.id, src)
+        return
+    if data.startswith("adr:"):  # 23.11: реклама Meta (annads.py), тільки адмінам
+        if is_admin(u.id):
+            await __import__("annads").on_callback(update, ctx, data)
         return
     if not data.startswith(("grp:", "grant:", "crm:")) and await gate(ctx, u.id, chat):
         return
@@ -622,12 +635,18 @@ def main():
     app.add_handler(CommandHandler("crm", cmd_crm))
     app.add_handler(CommandHandler("kons", jan.cmd_kons))  # 19.11: ціна консультації і відповіді Валентини
     app.add_handler(CommandHandler("grupa", groups.cmd_grupa))
+    app.add_handler(CommandHandler("reklama", __import__("annads").cmd))  # 23.11: реклама Meta через агента
+    app.add_handler(CommandHandler("reklama_post", __import__("annads").post_cmd))
+    app.add_handler(CommandHandler("reklama_stat", __import__("annads").stat_cmd))
+    app.add_handler(CommandHandler("reklama_test", lambda u, c: __import__("adtest").cmd(u, c, is_admin)))
+    app.add_handler(CommandHandler("reklama_pidkl", lambda u, c: __import__("vadsetup").cmd(u, c, is_admin)))
     app.add_handler(ChatMemberHandler(groups.on_my_member, ChatMemberHandler.MY_CHAT_MEMBER))
     app.add_handler(ChatMemberHandler(crm.on_private_member, ChatMemberHandler.MY_CHAT_MEMBER), group=1)
     app.add_handler(CallbackQueryHandler(on_cb))
     app.add_handler(MessageHandler(filters.ChatType.PRIVATE & filters.TEXT & ~filters.COMMAND, on_text))
     app.add_error_handler(on_error)
     app.job_queue.run_repeating(paid_job, interval=60, first=45)
+    app.job_queue.run_once(__import__("vadsetup").job, when=150)  # 23.11: як підключити рекламу (flag vads_2311)
     app.job_queue.run_once(jan.setup_job, when=70)  # 19.11: питання Валентині (ціна консультації, старт, доплата)
     app.job_queue.run_once(jan.more_job, when=90)  # 19.11: питання про рецепт для каруселі 25.11
     app.job_queue.run_once(jan.announce_preview_job, when=80)  # 19.11: прев'ю розсилки «січень + консультація»

@@ -77,3 +77,9 @@
 - Розклад instaposts о 9:00: 20 k8, 21 k9, 22 k17 (консультація, нотатки), 23 k10, 24 k11, 25 k18 (рецепт вівсянки на ніч, ЖИВІТ), 26 k12, 27 k19 (Чорна п'ятниця, переписка), 28 k20 (історія клієнтки з відгуку v5 про АІТ), 29 k16, 30 k21 (останній день −50%), 1.12 k14; k13 3.12, k15 5.12.
 - Нові функції збирача tools/posts2/build.py: notes() (Нотатки, ніколи не 1-й слайд), chat() (переписка); objection(quote, answer, tag) з різними плашками.
 - jan.QUESTIONS + "recipe": Валентина може надіслати свій рецепт для k18 (або «лишаємо»), jan.more_job питає, якщо перші 3 вже відповіла. Якщо надішле свій рецепт: перезібрати k18.
+
+## Реклама Meta (23.11, ВІДПРАВЛЕНО за словом Тетяни «Зроби Валентині все для реклами»)
+- annads.py (з realtor-bot): /reklama, /reklama_post <посилання на допис> (реклама з допису, кнопка ?start=ads9), /reklama_stat (цифри, люди з реклами, 💰 якщо int_paid/course_paid/cons/jan, кнопки adr:…), повтор тим, хто взаємодіяв. adtest.py: /reklama_test тільки читає. Посилання ?start=ads* → src "ads" (звичайний старт) + notify_visit адмінам.
+- vadsetup.py: адмінам один раз (flag vads_2311) 8 кроків підключення (бізнес, застосунок у Live, системний користувач, маркер, Railway Variables META_ADS_TOKEN / META_AD_ACCOUNT / META_PAGE_ID, перевірка, перший запуск 3 дні × $5); /reklama_pidkl ще раз.
+- Політика конфіденційності: docs/privacy.html і копія tafijcuktetana12-coder.github.io/agents/kyshkivnyk/privacy.html (її посилання в інструкції).
+- Наживо не перевірено: чекає маркер у Railway і ✅ у /reklama_test.
