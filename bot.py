@@ -110,6 +110,13 @@ SECTIONS = {  # код: (назва кнопки, текст, картинка)
 async def show_section(ctx, chat_id, code):
     _, attr, img = SECTIONS[code]
     await send_photo(ctx, chat_id, img)
+    if code == "author":  # 24.11 (Тетяна): під розділом про Валентину кнопки запису на консультацію і особистих повідомлень
+        kb = M([[B(jan.BTN_CONS, callback_data="cons")],
+                [B("💬 Написати Валентині особисто", url=f"https://t.me/{C.AUTHOR_CONTACT.lstrip('@')}")],
+                [B("📢 Мій канал", url=C.CHANNEL_URL)],
+                [B(T.BTN_MENU, callback_data="menu")]])
+        await ctx.bot.send_message(chat_id, getattr(T, attr), reply_markup=kb, parse_mode="HTML", disable_web_page_preview=True)
+        return
     await ctx.bot.send_message(chat_id, getattr(T, attr) + T.URGENT, reply_markup=kb_section(), parse_mode="HTML")
 
 
