@@ -479,6 +479,10 @@ async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await __import__("support").show(ctx, chat, u.id)
     elif data == "soon:analyses":  # 24.11: розбір аналізів з ланцюжка SendPulse (analyses.py)
         await __import__("analyses").show(ctx, chat, u.id)
+    elif data == "soon:discounts":  # 24.11: знижки на аналізи з ланцюжка SendPulse (discounts.py)
+        await __import__("discounts").show(ctx, chat, u.id)
+    elif data.startswith("zn:"):
+        await __import__("discounts").on_cb(ctx, chat, u.id, data)
     elif data == "soon:kids":  # 24.11: курс «Здоров'я дітей» з ланцюжка SendPulse (kids.py)
         await __import__("kids").show(ctx, chat, u.id)
     elif data == "kids:buy":
