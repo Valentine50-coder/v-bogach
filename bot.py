@@ -63,7 +63,7 @@ HIDE = ReplyKeyboardRemove()
 
 async def ensure_bottom(ctx, uid, chat):
     """10.11: хто має старе меню (до оновлення), отримує нове при першій дії, без розсилки."""
-    if not ctx.user_data.get("hid") and db.flag_get(f"bm2:{uid}") != "1":
+    if not ctx.user_data.get("hid") and db.flag_get(f"bm3:{uid}") != "1":
         await show_bottom(ctx, chat)
 
 
@@ -75,19 +75,22 @@ def hide(ctx):
 
 def bottom(ctx, uid):
     ctx.user_data.pop("hid", None)
-    db.flag_set(f"bm2:{uid}", "1")
+    db.flag_set(f"bm3:{uid}", "1")
     return kb_bottom(is_admin(uid))
 
 
 async def show_bottom(ctx, chat_id, text=None):
     ctx.user_data.pop("hid", None)
-    db.flag_set(f"bm2:{chat_id}", "1")
+    db.flag_set(f"bm3:{chat_id}", "1")
     await ctx.bot.send_message(chat_id, text or T.MENU_BACK, reply_markup=kb_bottom(is_admin(chat_id)), parse_mode="HTML")
 
 
 BOTTOM = {t: code for row in T.BTN_BOTTOM for t, code in row}
 BOTTOM.update({"Про Валентину": "author", "Про запуск": "launch", "🎯 Для кого": "for", "Програма": "program",  # 12.11: старі назви
-               "🎁 Що ви отримаєте": "get", "Умови і ціна": "terms", "💳 Оплатити": "pay", "💳 ОПЛАТИТИ": "pay", "🏠 Меню": "home"})
+               "🎁 Що ви отримаєте": "get", "Умови і ціна": "terms", "💳 Оплатити": "pay", "💳 ОПЛАТИТИ": "pay", "🏠 Меню": "home",
+               "ПРО ЗАПУСК": "launch", "🎯 ДЛЯ КОГО": "for", "ПРОГРАМА": "program", "🎁 ЩО ВИ ОТРИМАЄТЕ": "get",  # 24.11: старе меню
+               "УМОВИ І ЦІНА": "terms"})
+SOON_MODS = {"guide": "guide", "kids": "kids", "support": "support", "analyses": "analyses", "discounts": "discounts"}  # 24.11
 
 
 def kb_intensive():
@@ -534,6 +537,8 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             await start_pay(ctx, u, chat)
         elif code == "cons":
             await jan.show_cons(ctx, chat, [[B(jan.BTN_JAN, callback_data="jan")]])
+        elif code in SOON_MODS:  # 24.11: кнопки старту в нижньому меню
+            await __import__(SOON_MODS[code]).show(ctx, chat, u.id)
         elif code == "video":
             await vidrev.send_video(ctx, chat, u.id)
         elif code == "reviews":
