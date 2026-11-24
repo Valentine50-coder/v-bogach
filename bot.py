@@ -318,6 +318,9 @@ async def paid_job(ctx):
         if kind == "test":
             await notify_admins(ctx, f"✅ Тестова оплата пройшла: {amount} {cur}. Автоплатіж працює, доступ нікому не відкрито.")
             return
+        if kind == "kids":  # 24.11: курс для дітей
+            await __import__("kids").on_paid(ctx, uid, amount, cur, notify_admins)
+            return
         if await jan.on_paid(ctx, uid, kind, amount, cur, notify_admins):  # 19.11: січень і консультація
             return
         u = db.get_user(uid)
@@ -440,7 +443,7 @@ async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             await q.edit_message_reply_markup(None)
             await jan.announce_go(ctx, chat, notify_admins)
         return
-    if data in ("menu", "int", "ask", "vid", "revs") or data.startswith(("sec:", "soon:")):
+    if data in ("menu", "int", "ask", "vid", "revs", "kids:buy") or data.startswith(("sec:", "soon:")):
         crm.log_ev(u.id, data)
     if data in ("menu", "int") and ctx.user_data.get("hid"):   # людина вийшла з тесту чи питання кнопкою: повертаємо меню
         await show_bottom(ctx, chat)
@@ -470,6 +473,11 @@ async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         code = data.split(":", 1)[1]
         if code in SECTIONS:
             await show_section(ctx, chat, code)
+    elif data == "soon:kids":  # 24.11: курс «Здоров'я дітей» з ланцюжка SendPulse (kids.py)
+        await __import__("kids").show(ctx, chat, u.id)
+    elif data == "kids:buy":
+        k = __import__("kids")
+        await make_invoice(ctx, u, chat, "kids", k.PRICE, k.NAME, k.PAY_TEXT)
     elif data.startswith("soon:"):
         await ctx.bot.send_message(chat, T.SOON, reply_markup=M([[B(T.BTN_INTENSIVE, callback_data="int")]]))
     elif data == "pay":
@@ -487,6 +495,13 @@ async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     elif data == "ask":
         ctx.user_data["ask"] = True
         await ctx.bot.send_message(chat, T.QUESTION, reply_markup=hide(ctx))
+
+
+async def _kids_fwd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """24.11: пересланий пост з закритого каналу курсу для дітей після /dity_kanal."""
+    from telegram.ext import ApplicationHandlerStop
+    if await __import__("kids").on_forward(update, ctx, is_admin):
+        raise ApplicationHandlerStop
 
 
 async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -650,6 +665,8 @@ def main():
     app.add_handler(ChatMemberHandler(groups.on_my_member, ChatMemberHandler.MY_CHAT_MEMBER))
     app.add_handler(ChatMemberHandler(crm.on_private_member, ChatMemberHandler.MY_CHAT_MEMBER), group=1)
     app.add_handler(CallbackQueryHandler(on_cb))
+    app.add_handler(CommandHandler("dity_kanal", lambda u, c: __import__("kids").cmd(u, c, is_admin)))  # 24.11
+    app.add_handler(MessageHandler(filters.ChatType.PRIVATE & filters.FORWARDED, _kids_fwd), group=-5)
     app.add_handler(MessageHandler(filters.ChatType.PRIVATE & filters.TEXT & ~filters.COMMAND, on_text))
     app.add_error_handler(on_error)
     app.job_queue.run_repeating(paid_job, interval=60, first=45)
