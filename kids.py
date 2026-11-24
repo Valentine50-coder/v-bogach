@@ -21,6 +21,7 @@ import db
 
 log = logging.getLogger("kids")
 PRICE = 999
+PAY_URL = "https://secure.wayforpay.com/payment/kursproditey"  # 24.11: пряме посилання від Тетяни
 OLD = 2485
 NAME = "Курс «7 кроків до хронічного здоров'я вашої дитини»"
 
@@ -45,7 +46,7 @@ PAID_WAIT = "Вхід у закритий канал курсу Валентин
 
 
 def kb_info():
-    return M([[B(f"💳 Придбати за {PRICE} грн", callback_data="kids:buy")],
+    return M([[B(f"💳 Придбати за {PRICE} грн", url=PAY_URL)],
               [B("💬 Поставити питання", url=f"https://t.me/{C.AUTHOR_CONTACT.lstrip('@')}")],
               [B("☰ Меню", callback_data="menu")]])
 
