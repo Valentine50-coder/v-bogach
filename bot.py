@@ -475,6 +475,8 @@ async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             await show_section(ctx, chat, code)
     elif data == "soon:guide":  # 24.11: гайд про цукор з ланцюжка SendPulse (guide.py)
         await __import__("guide").show(ctx, chat, u.id)
+    elif data == "soon:support":  # 24.11: індивідуальний супровід з ланцюжка SendPulse (support.py)
+        await __import__("support").show(ctx, chat, u.id)
     elif data == "soon:kids":  # 24.11: курс «Здоров'я дітей» з ланцюжка SendPulse (kids.py)
         await __import__("kids").show(ctx, chat, u.id)
     elif data == "kids:buy":
