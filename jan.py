@@ -23,6 +23,7 @@ import db
 log = logging.getLogger("jan")
 TZ = ZoneInfo("Europe/Kyiv")
 BOOK, EARLY, FULL, SEATS = 350, 750, C.INTENSIVE_AMOUNT, 20
+ADV_BOOK = 159  # 26.11 (Валентина через Тетяну): бронь за спецціною для адвенту «Здорові свята», kind jba
 CONS_UNTIL = datetime(2026, 11, 30, 23, 59, tzinfo=TZ)
 _BG = set()
 
@@ -165,6 +166,12 @@ async def on_cb(ctx, u, chat, data, make_invoice, notify_admins, who):
             return
         await make_invoice(ctx, u, chat, "jb", BOOK, "Бронювання місця в групі на січень «Здоровий кишківник»",
                            "Ось посилання на бронювання 👇 Після оплати поверніться в цей чат, протягом хвилини я все підтверджу ❤")
+    elif data == "jn:abook":  # 26.11: бронь з адвенту за 159
+        if st:
+            await ctx.bot.send_message(chat, "Ваше місце в групі на січень уже закріплене ❤")
+            return
+        await make_invoice(ctx, u, chat, "jba", ADV_BOOK, "Бронювання місця в групі на січень «Здоровий кишківник» (ціна адвенту)",
+                           "Ось посилання на бронювання за ціною адвенту 👇 Після оплати поверніться в цей чат, протягом хвилини я все підтверджу ❤")
     elif data == "jn:full":
         if st == "f":
             await ctx.bot.send_message(chat, "Групу на січень у вас уже оплачено повністю ❤")
@@ -193,7 +200,7 @@ async def on_cb(ctx, u, chat, data, make_invoice, notify_admins, who):
 
 async def _rest(ctx, u, chat, st, make_invoice):
     total = int(st[1:] or EARLY)
-    rest = total - BOOK
+    rest = total - int(db.flag_get(f"jan_bk:{u.id}") or BOOK)
     await make_invoice(ctx, u, chat, "jr", rest, "Доплата: група на січень «Здоровий кишківник»",
                        f"Ось посилання на доплату <code>{rest} грн</code> 👇 Після оплати поверніться в цей чат ❤")
 
@@ -204,15 +211,17 @@ async def on_paid(ctx, uid, kind, amount, cur, notify_admins):
     u = db.get_user(uid)
     name = (u["name"] if u else "") + (f" @{u['username']}" if u and u["username"] else "")
     crm = __import__("crm")
-    if kind == "jb":
+    if kind in ("jb", "jba"):
         total = EARLY if early() else FULL
+        book = ADV_BOOK if kind == "jba" else BOOK
+        db.flag_set(f"jan_bk:{uid}", str(book))
         db.flag_set(f"jan:{uid}", f"b{total}")  # до повідомлень
         db.set_field(uid, "course_paid", 1)
-        crm.log_ev(uid, "paid", f"{amount}|бронь січень")
-        await _send(ctx, uid, BOOKED.format(total=total, rest=total - BOOK),
-                    M([[B(f"Доплатити {total - BOOK} грн", callback_data="jn:rest")]]))
-        await notify_admins(ctx, f"✅ Бронь у групу на січень: {amount} {cur}. {name} (ID {uid}). Повна вартість для неї {total} грн, "
-                                 f"доплата {total - BOOK}. Зайнято місць: {taken()} з {SEATS} за 750.")
+        crm.log_ev(uid, "paid", f"{amount}|бронь січень{' (адвент)' if kind == 'jba' else ''}")
+        await _send(ctx, uid, BOOKED.format(total=total, rest=total - book),
+                    M([[B(f"Доплатити {total - book} грн", callback_data="jn:rest")]]))
+        await notify_admins(ctx, f"✅ Бронь у групу на січень{' з адвенту' if kind == 'jba' else ''}: {amount} {cur}. {name} (ID {uid}). Повна вартість для неї {total} грн, "
+                                 f"доплата {total - book}. Зайнято місць: {taken()} з {SEATS} за 750.")
         return True
     if kind.startswith("jf") or kind == "jr":
         db.flag_set(f"jan:{uid}", "f")

@@ -3,7 +3,7 @@
 - ?start=advent (кодове слово АДВЕНТ у ManyChat) або кнопка av:join: людина в адвенті (kv av:<uid>=1).
 - 1-31.12 о 9:00 за Києвом job надсилає віконце дня всім, хто в адвенті (kv avs:<n>:<uid> ДО відправки, kv av_day = n).
 - Хто приєднався пізніше, одразу отримує сьогоднішнє віконце, а минулі відкриває кнопкою «📖 Відкриті віконця» (av:list → av:o:<n>).
-- 24.12 подарунок: PDF media/zdorove_menu_tyzhden.pdf. 28.12 і 31.12 бронь інтенсиву 350 (кнопка jn:book, оплата jb у jan.py).
+- 24.12 подарунок: PDF media/zdorove_menu_tyzhden.pdf. 28.12 і 31.12 бронь інтенсиву за спецціною 159 (кнопка jn:abook, оплата jba у jan.py).
 - Розсилка-запрошення: preview_job адмінам (kv av_prev) + «✅ Розіслати» (av:go, kv av_sent ДО відправки), усім, хто не заблокував.
 - /advent (адмін): скільки людей в адвенті, яке віконце сьогодні.
 """
@@ -37,7 +37,7 @@ JOINED_LATE = "Ви в адвенті ❤ Ось сьогоднішнє віко
 NOTE = "\n\n<i>Меню не замінює особистої консультації спеціаліста.</i>"
 BTN_JOIN = "🎄 Хочу в адвент"
 BTN_LIST = "📖 Відкриті віконця"
-BTN_BOOK = "🎄 Забронювати за 350 грн"
+BTN_BOOK = "🎄 Забронювати за 159 грн"
 
 
 def _now():
@@ -67,7 +67,7 @@ def members():
 def kb_window(n):
     rows = []
     if len(W[n - 1]) > 3 and W[n - 1][3] == "book":
-        rows.append([B(BTN_BOOK, callback_data="jn:book")])
+        rows.append([B(BTN_BOOK, callback_data="jn:abook")])
     if n > 1:
         rows.append([B(BTN_LIST, callback_data="av:list")])
     return M(rows) if rows else None
@@ -189,7 +189,7 @@ async def preview_job(ctx):
             await ctx.bot.send_message(a, INVITE, parse_mode="HTML", reply_markup=M([[B(BTN_JOIN, callback_data="av:join")]]))
             await ctx.bot.send_message(
                 a, "👆 Так виглядатиме запрошення в адвент «Здорові свята» (31 віконце з вашого «Здорового меню на тиждень», "
-                   "24.12 сам файл у подарунок, 28.12 і 31.12 бронь інтенсиву за 350). Посилання для Instagram: "
+                   "24.12 сам файл у подарунок, 28.12 і 31.12 бронь інтенсиву за спецціною 159 замість 350). Посилання для Instagram: "
                    "https://t.me/valentina_shvets_bot?start=advent\n\n"
                    "Розіслати запрошення всім в агенті?",
                 reply_markup=M([[B("✅ Розіслати", callback_data="av:go")]]))
