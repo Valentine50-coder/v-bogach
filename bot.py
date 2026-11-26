@@ -266,6 +266,9 @@ async def go_src(ctx, update_or_none, chat_id, uid, src):
     elif src == "jan":
         await ctx.bot.send_message(chat_id, "Вітаю! ❤", reply_markup=bottom(ctx, uid))
         await jan.show_jan(ctx, chat_id, [])
+    elif src == "advent":  # 26.11: адвент «Здорові свята» (advent.py)
+        await ctx.bot.send_message(chat_id, "Вітаю! ❤", reply_markup=bottom(ctx, uid))
+        await __import__("advent").open_(ctx, chat_id, uid)
     elif src == "test":
         await ctx.bot.send_message(chat_id, "Вітаю! ❤", reply_markup=bottom(ctx, uid))
         await quiz.start(ctx.bot, chat_id)
@@ -278,7 +281,8 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     arg = (ctx.args[0].lower() if ctx.args else "")
     src = ("hochu" if arg in ("hochu", "xochu", "intensive") else "test" if arg in ("test", "diagnostyka", "diag")
            else "site" if arg == "site" else "video" if arg in ("bunt", "video", "vid")
-           else "cons" if arg in ("cons", "kons", "konsultatsiya", "kyshkivnyk") else "jan" if arg in ("jan", "sichen") else "start")
+           else "cons" if arg in ("cons", "kons", "konsultatsiya", "kyshkivnyk") else "jan" if arg in ("jan", "sichen")
+           else "advent" if arg in ("advent", "adv", "advent2026") else "start")
     if arg.startswith("ads"):  # 23.11: людина з реклами Meta (annads.py)
         src = "ads"
     new = db.get_user(u.id) is None
@@ -293,7 +297,7 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     crm.log_ev(u.id, "start" if new else "restart", src)
     crm.log_ev(u.id, {"hochu": "int_full", "site": "site", "test": "quiz_open", "video": "video"}.get(src, "hello"))
     if new:
-        await notify_admins(ctx, f"👋 Новий підписник ({ {'hochu': 'кодове слово ХОЧУ', 'test': 'діагностика', 'site': 'з сайту', 'video': 'кодове слово БУНТ', 'cons': 'консультація (КИШКІВНИК)', 'jan': 'група на січень'}.get(src, 'старт') }): {who(u)}")
+        await notify_admins(ctx, f"👋 Новий підписник ({ {'hochu': 'кодове слово ХОЧУ', 'test': 'діагностика', 'site': 'з сайту', 'video': 'кодове слово БУНТ', 'cons': 'консультація (КИШКІВНИК)', 'jan': 'група на січень', 'advent': 'адвент «Здорові свята»'}.get(src, 'старт') }): {who(u)}")
     if await gate(ctx, u.id, update.effective_chat.id, src):
         return
     await go_src(ctx, update, update.effective_chat.id, u.id, src)
@@ -505,6 +509,8 @@ async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await jan.show_jan(ctx, chat, [[B(T.BTN_MENU, callback_data="menu")]])
     elif data.startswith("jn:"):
         await jan.on_cb(ctx, u, chat, data, make_invoice, notify_admins, who)
+    elif data.startswith("av:"):  # 26.11: адвент «Здорові свята»
+        await __import__("advent").on_cb(ctx, u, chat, data, notify_admins)
     elif data == "ask":
         ctx.user_data["ask"] = True
         await ctx.bot.send_message(chat, T.QUESTION, reply_markup=hide(ctx))
@@ -670,7 +676,8 @@ def main():
     app.add_handler(CommandHandler("wfptest", cmd_wfptest))
     app.add_handler(CommandHandler("help", cmd_help))
     app.add_handler(CommandHandler("crm", cmd_crm))
-    app.add_handler(CommandHandler("kons", jan.cmd_kons))  # 19.11: ціна консультації і відповіді Валентини
+    app.add_handler(CommandHandler("kons", jan.cmd_kons))
+    app.add_handler(CommandHandler("advent", __import__("advent").cmd))  # 26.11: адвент «Здорові свята»  # 19.11: ціна консультації і відповіді Валентини
     app.add_handler(CommandHandler("grupa", groups.cmd_grupa))
     app.add_handler(CommandHandler("reklama", __import__("annads").cmd))  # 23.11: реклама Meta через агента
     app.add_handler(CommandHandler("reklama_post", __import__("annads").post_cmd))
@@ -685,6 +692,8 @@ def main():
     app.add_handler(MessageHandler(filters.ChatType.PRIVATE & filters.TEXT & ~filters.COMMAND, on_text))
     app.add_error_handler(on_error)
     app.job_queue.run_repeating(paid_job, interval=60, first=45)
+    app.job_queue.run_repeating(__import__("advent").job, interval=300, first=150)  # 26.11: віконце дня 1-31.12 о 9:00
+    app.job_queue.run_once(__import__("advent").preview_job, when=100)  # 26.11: прев'ю запрошення в адвент адмінам
     app.job_queue.run_once(__import__("vadsetup").job, when=150)  # 23.11: як підключити рекламу (flag vads_2311)
     app.job_queue.run_once(__import__("vadsetup").note_job, when=200)  # 23.11: кабінет налаштовує Тетяна (flag vads_note)
     app.job_queue.run_once(jan.setup_job, when=70)  # 19.11: питання Валентині (ціна консультації, старт, доплата)
