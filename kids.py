@@ -45,8 +45,8 @@ PAID_LINK = "Ось ваш вхід у закритий канал курсу �
 PAID_WAIT = "Вхід у закритий канал курсу Валентина надішле вам найближчим часом ❤"
 
 
-def kb_info():
-    return M([[B("Придбати", url=PAY_URL)]])
+def kb_info():  # 26.11: оплата через агента (kids:buy, kind "kids"), щоб агент бачив оплату і сам давав вхід у канал
+    return M([[B(f"Придбати за {PRICE} грн", callback_data="kids:buy")]])
 
 
 def kb_ask():
