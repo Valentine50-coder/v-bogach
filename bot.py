@@ -705,6 +705,7 @@ def main():
     app.job_queue.run_repeating(paid_job, interval=60, first=45)
     app.job_queue.run_repeating(__import__("advent").job, interval=300, first=150)  # 26.11: віконце дня 1-31.12 о 9:00
     app.job_queue.run_once(__import__("advent").valya_job, when=60)
+    app.job_queue.run_once(__import__("advent").all_job, when=70)  # 26.11: Валентині всі 31 віконце (flag av_all)
     app.job_queue.run_once(__import__("probio2611").job, when=75)  # 26.11: ролик «Пробіотики» Валентині файлом  # 26.11: Валентині посилання і як виглядає адвент
     app.job_queue.run_once(__import__("advent").preview_job, when=100)  # 26.11: прев'ю запрошення в адвент адмінам
     app.job_queue.run_once(__import__("vadsetup").job, when=150)  # 23.11: як підключити рекламу (flag vads_2311)

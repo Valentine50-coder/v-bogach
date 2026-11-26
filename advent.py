@@ -277,3 +277,23 @@ async def valya_job(ctx):
                                            reply_markup=M([[B("✅ Розіслати", callback_data="av:go")]]))
         except Exception as e:
             log.warning("advent valya %s: %s", a, e)
+
+
+ALL_URL = "https://tafijcuktetana12-coder.github.io/agents/kyshkivnyk/advent/?all=1"
+
+
+async def all_job(ctx):
+    """26.11 (Тетяна): Валентині (адмінам) один раз посилання, де відкриті всі 31 віконце (kv av_all)."""
+    if db.flag_get("av_all") == "1":
+        return
+    db.flag_set("av_all", "1")
+    t = ("🎄 <b>Ваш адвент «Здорові свята» повністю!</b>\n\n"
+         "Тут <b>відкриті всі 31 віконце</b> одразу: натискайте на будь-яку кульку і дивіться наповнення ❤\n\n"
+         "<i>Це посилання тільки для вас. Людям віконця відкриватимуться по одному, щоранку з 1 грудня о 9:00.</i>")
+    for a in C.ADMIN_IDS:
+        try:
+            await ctx.bot.send_message(a, t, parse_mode="HTML",
+                                       reply_markup=M([[B("🎄 Відкрити всі віконця", web_app=WebAppInfo(ALL_URL))],
+                                                       [B("🌐 Відкрити в браузері", url=ALL_URL)]]))
+        except Exception as e:
+            log.warning("advent all %s: %s", a, e)
