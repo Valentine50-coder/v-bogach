@@ -9,6 +9,7 @@ on_paid(): flag kids_paid:<uid>, людині дякуємо; якщо закр�
 запрошення, і запам'ятовує канал; тим, хто вже оплатив, розсилає посилання.
 """
 import asyncio
+import os
 import html
 import logging
 import time
@@ -54,7 +55,15 @@ def kb_ask():
 
 async def show(ctx, chat, uid):
     crm.log_ev(uid, "kids")
-    await ctx.bot.send_message(chat, TEXT_1, parse_mode="HTML")
+    img = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images", "kids_kurs.jpg")  # 26.11: обкладинка курсу (від Тетяни)
+    if os.path.exists(img) and len(TEXT_1) <= 1000:
+        with open(img, "rb") as f:
+            await ctx.bot.send_photo(chat, f, caption=TEXT_1, parse_mode="HTML")
+    else:
+        if os.path.exists(img):
+            with open(img, "rb") as f:
+                await ctx.bot.send_photo(chat, f)
+        await ctx.bot.send_message(chat, TEXT_1, parse_mode="HTML")
     await asyncio.sleep(8)
     await ctx.bot.send_message(chat, TEXT_2, parse_mode="HTML", reply_markup=kb_info())
     await ctx.bot.send_message(chat, TEXT_3, parse_mode="HTML", reply_markup=kb_ask())
