@@ -60,7 +60,7 @@ font-weight:800;font-size:17px;box-shadow:0 8px 16px rgba(29,91,60,.25);transiti
 </style></head><body><div class="wrap">
 <span class="tag">АДВЕНТ · ГРУДЕНЬ</span>
 <h1>Здорові <i>свята</i></h1>
-<p class="sub">31 віконце без цукру, глютену і лактози: сніданки, обіди, вечері і мої підказки для кишківника ❤</p>
+<p class="sub">31 віконце: корисні святкові рецепти з мого збірника, поради, як відсвяткувати без наслідків, і подарунок ❤</p>
 <div class="info" id="info"></div>
 <div class="grid" id="grid"></div>
 <div class="legend">🎁 24 грудня подарунок · кожне віконце відкривається у свій день о 9:00</div>
@@ -103,7 +103,7 @@ const q=new URLSearchParams(location.search).get('d');if(q&&+q<=N)show(+q);
 
 
 def main(out):
-    os.makedirs(os.path.join(out, "img"), exist_ok=True)
+    os.makedirs(os.path.join(out, "img", "r"), exist_ok=True)
     data = []
     for pic, title, text, *k in W:
         data.append({"img": pic, "t": title, "x": text, "k": k[0] if k else ""})
