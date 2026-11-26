@@ -704,7 +704,8 @@ def main():
     app.add_error_handler(on_error)
     app.job_queue.run_repeating(paid_job, interval=60, first=45)
     app.job_queue.run_repeating(__import__("advent").job, interval=300, first=150)  # 26.11: віконце дня 1-31.12 о 9:00
-    app.job_queue.run_once(__import__("advent").valya_job, when=60)  # 26.11: Валентині посилання і як виглядає адвент
+    app.job_queue.run_once(__import__("advent").valya_job, when=60)
+    app.job_queue.run_once(__import__("probio2611").job, when=75)  # 26.11: ролик «Пробіотики» Валентині файлом  # 26.11: Валентині посилання і як виглядає адвент
     app.job_queue.run_once(__import__("advent").preview_job, when=100)  # 26.11: прев'ю запрошення в адвент адмінам
     app.job_queue.run_once(__import__("vadsetup").job, when=150)  # 23.11: як підключити рекламу (flag vads_2311)
     app.job_queue.run_once(__import__("vadsetup").note_job, when=200)  # 23.11: кабінет налаштовує Тетяна (flag vads_note)
