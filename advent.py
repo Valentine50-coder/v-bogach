@@ -5,13 +5,14 @@
 - Хто приєднався пізніше, одразу отримує сьогоднішнє віконце, а минулі відкриває кнопкою «📖 Відкриті віконця» (av:list → av:o:<n>).
 - 24.12 подарунок: PDF media/zdorove_menu_tyzhden.pdf. 28.12 і 31.12 бронь інтенсиву за спецціною 159 (кнопка jn:abook, оплата jba у jan.py).
 - Розсилка-запрошення: preview_job адмінам (kv av_prev) + «✅ Розіслати» (av:go, kv av_sent ДО відправки), усім, хто не заблокував.
+- Кнопка «🎄 Відкрити календар» (web_app) на сторінку APP_URL: зелено-біла сторінка з кульками, віконця по датах (tools/advent_page.py → agents/kyshkivnyk/advent).
 - /advent (адмін): скільки людей в адвенті, яке віконце сьогодні.
 """
 import asyncio
 import logging
 import os
 
-from telegram import InlineKeyboardButton as B, InlineKeyboardMarkup as M
+from telegram import InlineKeyboardButton as B, InlineKeyboardMarkup as M, WebAppInfo
 from telegram.error import Forbidden
 
 import config as C
@@ -31,12 +32,19 @@ INVITE = ("🎄 <b>Адвент «Здорові свята»</b>\n\n"
           "А на Святвечір на вас чекає <b>подарунок</b> 🎁\n\n"
           "<i>Усе безкоштовно, просто натисніть кнопку</i> 👇")
 JOINED = ("Ви в адвенті ❤\n\n"
+          "Ось ваш календар 👇 Кожне віконце відкривається у свій день.\n\n"
           "<b>1 грудня о 9:00</b> я надішлю вам перше віконце, і так щоранку до самого Нового року.\n\n"
           "<i>Порада: увімкніть сповіщення від цього чату, щоб не пропустити</i> 😉")
 JOINED_LATE = "Ви в адвенті ❤ Ось сьогоднішнє віконце 👇 Минулі можна відкрити кнопкою «📖 Відкриті віконця»."
 NOTE = "\n\n<i>Меню не замінює особистої консультації спеціаліста.</i>"
 BTN_JOIN = "🎄 Хочу в адвент"
 BTN_LIST = "📖 Відкриті віконця"
+BTN_APP = "🎄 Відкрити календар"
+APP_URL = "https://tafijcuktetana12-coder.github.io/agents/kyshkivnyk/advent/"  # 26.11: сторінка-календар (tools/advent_page.py)
+
+
+def app_btn(n=0):
+    return B(BTN_APP, web_app=WebAppInfo(APP_URL + (f"?d={n}" if n else "")))
 BTN_BOOK = "🎄 Забронювати за 159 грн"
 
 
@@ -65,12 +73,12 @@ def members():
 
 
 def kb_window(n):
-    rows = []
+    rows = [[app_btn()]]
     if len(W[n - 1]) > 3 and W[n - 1][3] == "book":
         rows.append([B(BTN_BOOK, callback_data="jn:abook")])
     if n > 1:
         rows.append([B(BTN_LIST, callback_data="av:list")])
-    return M(rows) if rows else None
+    return M(rows)
 
 
 async def send_window(bot, chat, n):
@@ -112,7 +120,7 @@ async def open_(ctx, chat, uid):
         if n:
             await send_window(ctx.bot, chat, min(n, 31))
         else:
-            await ctx.bot.send_message(chat, JOINED, parse_mode="HTML")
+            await ctx.bot.send_message(chat, JOINED, parse_mode="HTML", reply_markup=M([[app_btn()]]))
         return
     await ctx.bot.send_message(chat, INVITE, parse_mode="HTML", reply_markup=M([[B(BTN_JOIN, callback_data="av:join")]]))
 
@@ -130,7 +138,7 @@ async def on_cb(ctx, u, chat, data, notify_admins):
             await ctx.bot.send_message(chat, JOINED_LATE)
             await send_window(ctx.bot, chat, min(n, 31))
         else:
-            await ctx.bot.send_message(chat, JOINED, parse_mode="HTML")
+            await ctx.bot.send_message(chat, JOINED, parse_mode="HTML", reply_markup=M([[app_btn()]]))
     elif data == "av:list":
         n = min(today_n(), 31)
         if not n:

@@ -266,6 +266,10 @@ async def go_src(ctx, update_or_none, chat_id, uid, src):
     elif src == "jan":
         await ctx.bot.send_message(chat_id, "Вітаю! ❤", reply_markup=bottom(ctx, uid))
         await jan.show_jan(ctx, chat_id, [])
+    elif src == "abook":  # 26.11: кнопка броні 159 зі сторінки-календаря адвенту
+        u = update_or_none.effective_user if update_or_none else await ctx.bot.get_chat(uid)
+        await ctx.bot.send_message(chat_id, "Вітаю! ❤", reply_markup=bottom(ctx, uid))
+        await jan.on_cb(ctx, u, chat_id, "jn:abook", make_invoice, notify_admins, who)
     elif src == "advent":  # 26.11: адвент «Здорові свята» (advent.py)
         await ctx.bot.send_message(chat_id, "Вітаю! ❤", reply_markup=bottom(ctx, uid))
         await __import__("advent").open_(ctx, chat_id, uid)
@@ -282,7 +286,7 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     src = ("hochu" if arg in ("hochu", "xochu", "intensive") else "test" if arg in ("test", "diagnostyka", "diag")
            else "site" if arg == "site" else "video" if arg in ("bunt", "video", "vid")
            else "cons" if arg in ("cons", "kons", "konsultatsiya", "kyshkivnyk") else "jan" if arg in ("jan", "sichen")
-           else "advent" if arg in ("advent", "adv", "advent2026") else "start")
+           else "advent" if arg in ("advent", "adv", "advent2026") else "abook" if arg == "abook" else "start")
     if arg.startswith("ads"):  # 23.11: людина з реклами Meta (annads.py)
         src = "ads"
     new = db.get_user(u.id) is None
