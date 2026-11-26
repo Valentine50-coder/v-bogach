@@ -63,7 +63,7 @@ HIDE = ReplyKeyboardRemove()
 
 async def ensure_bottom(ctx, uid, chat):
     """10.11: хто має старе меню (до оновлення), отримує нове при першій дії, без розсилки."""
-    if not ctx.user_data.get("hid") and db.flag_get(f"bm4:{uid}") != "1":
+    if not ctx.user_data.get("hid") and db.flag_get(f"bm5:{uid}") != "1":
         await show_bottom(ctx, chat)
 
 
@@ -75,13 +75,13 @@ def hide(ctx):
 
 def bottom(ctx, uid):
     ctx.user_data.pop("hid", None)
-    db.flag_set(f"bm4:{uid}", "1")
+    db.flag_set(f"bm5:{uid}", "1")
     return kb_bottom(is_admin(uid))
 
 
 async def show_bottom(ctx, chat_id, text=None):
     ctx.user_data.pop("hid", None)
-    db.flag_set(f"bm4:{chat_id}", "1")
+    db.flag_set(f"bm5:{chat_id}", "1")
     await ctx.bot.send_message(chat_id, text or T.MENU_BACK, reply_markup=kb_bottom(is_admin(chat_id)), parse_mode="HTML")
 
 
@@ -513,6 +513,8 @@ async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await jan.show_jan(ctx, chat, [[B(T.BTN_MENU, callback_data="menu")]])
     elif data.startswith("jn:"):
         await jan.on_cb(ctx, u, chat, data, make_invoice, notify_admins, who)
+    elif data.startswith("vit:"):  # 26.11: вітаміни
+        await __import__("vitamins").on_cb(ctx, u, chat, data)
     elif data.startswith("av:"):  # 26.11: адвент «Здорові свята»
         await __import__("advent").on_cb(ctx, u, chat, data, notify_admins)
     elif data == "ask":
@@ -547,6 +549,9 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             await start_pay(ctx, u, chat)
         elif code == "advent":  # 26.11
             await __import__("advent").open_(ctx, chat, u.id)
+        elif code in ("vit_pick", "vit_disc"):  # 26.11: вітаміни (vitamins.py)
+            v = __import__("vitamins")
+            await (v.show_pick if code == "vit_pick" else v.show_disc)(ctx, chat, u.id)
         elif code == "cons":
             await jan.show_cons(ctx, chat, [[B(jan.BTN_JAN, callback_data="jan")]])
         elif code in SOON_MODS:  # 24.11: кнопки старту в нижньому меню

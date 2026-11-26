@@ -34,7 +34,13 @@ def kb():
 
 async def show(ctx, chat, uid):
     crm.log_ev(uid, "analyses")
-    await ctx.bot.send_message(chat, TEXT_1, parse_mode="HTML")
+    import os
+    img = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images", "analizy.jpg")  # 26.11: фото Валентини
+    if os.path.exists(img) and len(TEXT_1) <= 1000:
+        with open(img, "rb") as f:
+            await ctx.bot.send_photo(chat, f, caption=TEXT_1, parse_mode="HTML")
+    else:
+        await ctx.bot.send_message(chat, TEXT_1, parse_mode="HTML")
     await asyncio.sleep(3)
     await ctx.bot.send_message(chat, TEXT_2, parse_mode="HTML")
     await asyncio.sleep(3)
