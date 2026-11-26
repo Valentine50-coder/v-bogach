@@ -63,7 +63,7 @@ HIDE = ReplyKeyboardRemove()
 
 async def ensure_bottom(ctx, uid, chat):
     """10.11: хто має старе меню (до оновлення), отримує нове при першій дії, без розсилки."""
-    if not ctx.user_data.get("hid") and db.flag_get(f"bm3:{uid}") != "1":
+    if not ctx.user_data.get("hid") and db.flag_get(f"bm4:{uid}") != "1":
         await show_bottom(ctx, chat)
 
 
@@ -75,13 +75,13 @@ def hide(ctx):
 
 def bottom(ctx, uid):
     ctx.user_data.pop("hid", None)
-    db.flag_set(f"bm3:{uid}", "1")
+    db.flag_set(f"bm4:{uid}", "1")
     return kb_bottom(is_admin(uid))
 
 
 async def show_bottom(ctx, chat_id, text=None):
     ctx.user_data.pop("hid", None)
-    db.flag_set(f"bm3:{chat_id}", "1")
+    db.flag_set(f"bm4:{chat_id}", "1")
     await ctx.bot.send_message(chat_id, text or T.MENU_BACK, reply_markup=kb_bottom(is_admin(chat_id)), parse_mode="HTML")
 
 
@@ -545,6 +545,8 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 await show_bottom(ctx, chat)
         elif code == "pay":
             await start_pay(ctx, u, chat)
+        elif code == "advent":  # 26.11
+            await __import__("advent").open_(ctx, chat, u.id)
         elif code == "cons":
             await jan.show_cons(ctx, chat, [[B(jan.BTN_JAN, callback_data="jan")]])
         elif code in SOON_MODS:  # 24.11: кнопки старту в нижньому меню
@@ -697,6 +699,7 @@ def main():
     app.add_error_handler(on_error)
     app.job_queue.run_repeating(paid_job, interval=60, first=45)
     app.job_queue.run_repeating(__import__("advent").job, interval=300, first=150)  # 26.11: віконце дня 1-31.12 о 9:00
+    app.job_queue.run_once(__import__("advent").valya_job, when=60)  # 26.11: Валентині посилання і як виглядає адвент
     app.job_queue.run_once(__import__("advent").preview_job, when=100)  # 26.11: прев'ю запрошення в адвент адмінам
     app.job_queue.run_once(__import__("vadsetup").job, when=150)  # 23.11: як підключити рекламу (flag vads_2311)
     app.job_queue.run_once(__import__("vadsetup").note_job, when=200)  # 23.11: кабінет налаштовує Тетяна (flag vads_note)

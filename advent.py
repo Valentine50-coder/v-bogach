@@ -241,3 +241,35 @@ async def cmd(update, ctx):
     await update.message.reply_text(
         f"🎄 Адвент «Здорові свята»: в адвенті {len(members())} людей, сьогодні віконце {today_n() or 'ще не почалось'}.\n"
         "Подивитись будь-яке віконце: /advent 5")
+
+
+VALYA = ("🎄 <b>Ваш адвент-календар «Здорові свята» готовий!</b>\n\n"
+         "31 віконце з вашого «Здорового меню на тиждень». З <b>1 по 31 грудня</b> щоранку о 9:00 агент сам надсилатиме людям віконце дня, "
+         "а ще в кожного є зелений календар з кульками, де віконця відкриваються по датах.\n\n"
+         "🎁 <b>24 грудня</b> файл «Здорове меню на тиждень» у подарунок\n"
+         "🎄 <b>28 і 31 грудня</b> бронь інтенсиву «Здоровий кишківник» за спецціною <code>159 грн</code> (для всіх інших 350)\n\n"
+         "🔗 <b>Посилання, за яким запускається адвент</b> (для Instagram, сторіс, каналу, ManyChat):\n"
+         "<code>https://t.me/valentina_shvets_bot?start=advent</code>\n\n"
+         "У меню агента зверху тепер кнопка <b>«🎄 АДВЕНТ-КАЛЕНДАР «ЗДОРОВІ СВЯТА»»</b>.\n\n"
+         "Подивитися будь-яке віконце: <code>/advent 8</code>, скільки людей в адвенті: /advent\n\n"
+         "<i>Нижче фото, як адвент виглядає зсередини, а потім запрошення, яке можна розіслати всім кнопкою «✅ Розіслати»</i> 👇")
+PREV = ["1_kalendar", "2_vikontse", "3_bron159", "4_do_startu", "5_zaproshennia", "6_vikontse_v_chati", "7_podarunok"]
+
+
+async def valya_job(ctx):
+    """26.11 (Тетяна): адмінам один раз пояснення, посилання і фото адвенту (kv av_valya)."""
+    if db.flag_get("av_valya") == "1":
+        return
+    db.flag_set("av_valya", "1")
+    from telegram import InputMediaPhoto
+    for a in C.ADMIN_IDS:
+        try:
+            await ctx.bot.send_message(a, VALYA, parse_mode="HTML", reply_markup=M([[app_btn()]]))
+            files = [open(os.path.join(DIR, "images", "advent", "prev", n + ".jpg"), "rb") for n in PREV]
+            try:
+                await ctx.bot.send_media_group(a, [InputMediaPhoto(f) for f in files])
+            finally:
+                for f in files:
+                    f.close()
+        except Exception as e:
+            log.warning("advent valya %s: %s", a, e)
