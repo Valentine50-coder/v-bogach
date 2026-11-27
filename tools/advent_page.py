@@ -25,6 +25,7 @@ background:linear-gradient(180deg,#e3f3e9 0%,#ffffff 55%,#fdf0f4 100%);padding:2
 .tag{display:inline-block;background:var(--g);color:#fff;font-weight:800;font-size:11px;letter-spacing:2px;padding:6px 12px;border-radius:20px}
 h1{font-weight:800;font-size:34px;line-height:1.05;color:var(--g);margin-top:12px}
 h1 i{font-family:'Playfair Display',serif;color:var(--pink)}
+.h2{font-family:'Playfair Display',serif;font-size:21px;color:var(--pink);margin-top:6px;line-height:1.2}
 .sub{font-size:14px;line-height:1.45;margin:10px 0 4px;color:#3b4a40}
 .info{font-size:13px;font-weight:600;color:var(--g2);margin-top:8px}
 .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px 6px;margin:20px 0 10px}
@@ -59,11 +60,12 @@ font-weight:800;font-size:17px;box-shadow:0 8px 16px rgba(29,91,60,.25);transiti
 .note{font-size:11px;color:#7a877f;text-align:center;margin-top:16px}
 </style></head><body><div class="wrap">
 <span class="tag">АДВЕНТ · ГРУДЕНЬ</span>
-<h1>Здорові <i>свята</i></h1>
-<p class="sub">31 віконце: корисні святкові рецепти з мого збірника, поради, як відсвяткувати без наслідків, і подарунок ❤</p>
+<h1>ЗДОРОВІ СВЯТА</h1>
+<div class="h2"><i>без зайвих кг та проблем в ШКТ</i></div>
+<p class="sub">31 віконце: корисні святкові рецепти, поради, як відсвяткувати без наслідків, і подарунки 🎁 від вашого хелс-коуча, нутриціолога Валентини Швець ❤️</p>
 <div class="info" id="info"></div>
 <div class="grid" id="grid"></div>
-<div class="legend">🎁 24 грудня подарунок · кожне віконце відкривається у свій день о 9:00</div>
+<div class="legend">🎁 Подарунки на Миколая, Святвечір і Різдво · кожне віконце відкривається у свій день о 9:00</div>
 <div class="note">Валентина Швець · нутриціолог, health-коуч</div>
 </div>
 <div class="ov" id="ov" onclick="if(event.target.id==='ov')cl()"><div class="card" id="card"></div></div>
@@ -83,9 +85,9 @@ function info(){const el=document.getElementById('info');
  else el.textContent=N>=31?'Усі 31 віконце відкриті ❤':'Сьогодні відкрито віконце '+N+' з 31';}
 function draw(){const g=document.getElementById('grid');g.innerHTML='';
  D.forEach((w,i)=>{const n=i+1,op=n<=N;const el=document.createElement('div');
-  const col=w.k==='gift'||w.k==='book'?'pinkb':(n%2?'green':'white');
+  const col=w.k==='gift'||w.k==='book'||n===6||n===25?'pinkb':(n%2?'green':'white');
   el.className='ball'+(op?'':' lock')+(n==N?' today':'')+(seen[n]?' seen':'');
-  el.innerHTML='<div class="cap"></div><div class="b '+col+'">'+n+'</div>'+(w.k==='gift'?'<span class="gift">🎁</span>':'');
+  el.innerHTML='<div class="cap"></div><div class="b '+col+'">'+n+'</div>'+(w.k==='gift'||n===6||n===25?'<span class="gift">🎁</span>':'');
   el.onclick=()=>op?show(n):lockMsg(n);g.appendChild(el)})}
 function lockMsg(n){const t='Це віконце відкриється '+n+' грудня о 9:00 😉';if(tg&&tg.showAlert)tg.showAlert(t);else alert(t)}
 function link(u){if(tg&&tg.openTelegramLink){tg.openTelegramLink(u)}else location.href=u}

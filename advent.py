@@ -25,17 +25,57 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 PDF = os.path.join(DIR, "media", "zdorove_menu_tyzhden.pdf")
 HOUR = 9
 
-INVITE = ("🎄 <b>Адвент «Здорові свята»</b>\n\n"
-          "Грудень у багатьох проходить однаково: корпоративи, салати, солодке, а потім у січні <i>«чому так важко і живіт як камінь?»</i>\n\n"
-          "Я хочу, щоб цього року було інакше. Тому з <b>1 по 31 грудня</b> щоранку о 9:00 я відкриватиму для вас одне віконце: "
-          "<b>корисний святковий рецепт</b> з мого збірника: салати, закуски, гарячі страви і десерти, а ще мої поради, як відсвяткувати без наслідків.\n\n"
-          "А на Святвечір на вас чекає <b>подарунок</b> 🎁\n\n"
+INVITE = ("🎄 Адвент «<b>ЗДОРОВІ СВЯТА без зайвих кг та проблем в ШКТ</b>»\n\n"  # 27.11: текст Валентини
+          "Грудень у багатьох проходить однаково: корпоративи, салати, солодке, а потім у січні <i>«чому так важко і живіт, як камінь?»</i>\n\n"
+          "<b><i>Мене звуть Валентина Швець. Я нутриціолог, хелс-коуч, і я хочу, щоб цього року у вас було інакше</i></b> 👌\n\n"
+          "<u>Тому з 1 по 31 грудня щоранку о 9:00</u> я відкриватиму для вас одне віконце: <b>корисні святкові рецепти</b> з мого збірника "
+          "та цінні поради, як відсвяткувати без наслідків для здоров'я та фігури.\n\n"
+          "А на <b>Миколая, Святвечір та Різдво</b> на вас чекають особливі подарунки від мене 🎁\n\n"
           "<i>Усе безкоштовно, просто натисніть кнопку</i> 👇")
-JOINED = ("Ви в адвенті ❤\n\n"
-          "Ось ваш календар 👇 Кожне віконце відкривається у свій день.\n\n"
-          "<b>1 грудня о 9:00</b> я надішлю вам перше віконце, і так щоранку до самого Нового року.\n\n"
-          "<i>Порада: увімкніть сповіщення від цього чату, щоб не пропустити</i> 😉")
-JOINED_LATE = "Ви в адвенті ❤ Ось сьогоднішнє віконце 👇 Минулі можна відкрити кнопкою «📖 Відкриті віконця»."
+INVITE_IMG = os.path.join(DIR, "images", "advent", "invite.jpg")  # 27.11: святкове фото Валентини з келихом
+JOINED = ("Вітаю, ви в моєму адвенті ❤\n\n"  # 27.11: текст Валентини
+          "Ось ваш календар 👇\n"
+          "Магія свят починається вже з першим днем зими ❄\n"
+          "Кожне віконце відкриється у свій день.\n\n"
+          "<b>1 грудня о 9:00</b> я надішлю вам перше віконце, і так щоранку до самого Нового року 🎄\n\n"
+          "<i>Порада: увімкніть сповіщення з цього чату або закріпіть його вгорі, щоб не пропустити всіх корисностей та подарунків</i> 😉")
+JOINED_LATE = "Вітаю, ви в моєму адвенті ❤ Ось сьогоднішнє віконце 👇 Минулі можна відкрити кнопкою «📖 Відкриті віконця»."
+# 27.11 (Валентина): подарунки після рецепту дня. Ціна діє до вказаного дня включно (Київ).
+GIFTS = {
+    6: ("guide_solodke.jpg",
+        "🎁 <b>Вітаю з Миколаєм!</b>\n\n"
+        "І крім святкового рецепту, дарую вам щедру знижку на мій <b>дуже корисний гайд «Як приборкати тягу до солодкого»</b> "
+        "з подарунками: <i>рейтингом солодощів та рецептами корисних смаколиків</i>.\n\n"
+        "<u><b>75% знижки: 155 грн замість 621 грн</b></u> ‼️",
+        "🎁 Забрати гайд за 155 грн", "av:guide", (2026, 12, 7)),
+    25: ("advent/xmas_cons.jpg",
+         "🎄 <b>Вітаю вас з Різдвом!</b>\n\n"
+         "І крім святкового рецепту, дарую щедру знижку на свою <b>повноцінну консультацію</b> "
+         "<i>(детальний розбір вашої ситуації, раціону, аналізів + комплексні рекомендації)</i>.\n\n"
+         "<u><b>75%: 1125 грн замість 4500 грн</b></u> 🔥",
+         "🎄 Записатись за 1125 грн", "av:cons", (2026, 12, 26)),
+}
+GIFT_PAY = {"av:guide": ("guide", 155, "Гайд «Як приборкати тягу до солодкого» (подарунок на Миколая)",
+                         "Ось посилання на оплату гайду 👇 Після оплати агент одразу надішле вам гайд ❤"),
+            "av:cons": ("cons", 1125, "Повноцінна консультація Валентини Швець (різдвяна знижка 75%)",
+                        "Ось посилання на оплату консультації 👇 Після оплати поверніться в цей чат ❤")}
+
+
+def gift_on(cb):
+    """Чи ще діє подарункова ціна з віконця (до кінця дня в GIFTS)."""
+    for n, g in GIFTS.items():
+        if g[3] == cb:
+            t = _now()
+            return (t.year, t.month, t.day) <= g[4]
+    return False
+
+
+async def send_invite(bot, chat):
+    kb = M([[B(BTN_JOIN, callback_data="av:join")]])
+    if os.path.exists(INVITE_IMG):
+        with open(INVITE_IMG, "rb") as f:
+            return await bot.send_photo(chat, f, caption=INVITE, parse_mode="HTML", reply_markup=kb)
+    return await bot.send_message(chat, INVITE, parse_mode="HTML", reply_markup=kb)
 NOTE = ""  # 27.11 (Валентина): фразу «не замінює консультації» прибрати всюди
 BTN_JOIN = "🎄 Хочу в адвент"
 BTN_LIST = "📖 Відкриті віконця"
@@ -99,6 +139,15 @@ async def send_window(bot, chat, n):
             await bot.send_message(chat, body, parse_mode="HTML", reply_markup=kb)
     else:
         await bot.send_message(chat, body, parse_mode="HTML", reply_markup=kb)
+    if n in GIFTS:
+        img, txt, btn, cb, _ = GIFTS[n]
+        gk = M([[B(btn, callback_data=cb)], [app_btn()]])
+        path = os.path.join(DIR, "images", img)
+        if os.path.exists(path):
+            with open(path, "rb") as f:
+                await bot.send_photo(chat, f, caption=txt, parse_mode="HTML", reply_markup=gk)
+        else:
+            await bot.send_message(chat, txt, parse_mode="HTML", reply_markup=gk)
     if kind == "gift":
         fid = db.flag_get("av_pdf")
         if fid:
@@ -122,7 +171,7 @@ async def open_(ctx, chat, uid):
         else:
             await ctx.bot.send_message(chat, JOINED, parse_mode="HTML", reply_markup=M([[app_btn()]]))
         return
-    await ctx.bot.send_message(chat, INVITE, parse_mode="HTML", reply_markup=M([[B(BTN_JOIN, callback_data="av:join")]]))
+    await send_invite(ctx.bot, chat)
 
 
 async def on_cb(ctx, u, chat, data, notify_admins):
@@ -176,7 +225,7 @@ async def _invite_all(ctx, notify_admins):
             continue
         db.flag_set(f"avi:{uid}", "1")
         try:
-            await ctx.bot.send_message(uid, INVITE, parse_mode="HTML", reply_markup=M([[B(BTN_JOIN, callback_data="av:join")]]))
+            await send_invite(ctx.bot, uid)
             ok += 1
         except Forbidden:
             crm.log_ev(uid, "blocked")
@@ -194,7 +243,7 @@ async def preview_job(ctx):
     db.flag_set("av_prev", "1")
     for a in C.ADMIN_IDS:
         try:
-            await ctx.bot.send_message(a, INVITE, parse_mode="HTML", reply_markup=M([[B(BTN_JOIN, callback_data="av:join")]]))
+            await send_invite(ctx.bot, a)
             await ctx.bot.send_message(
                 a, "👆 Так виглядатиме запрошення в адвент «Здорові свята» (31 віконце з вашого «Збірника рецептів на новорічні свята», "
                    "24.12 сам файл у подарунок, 28.12 і 31.12 участь в інтенсиві за спецціною 159 замість 499). Посилання для Instagram: "
@@ -272,7 +321,7 @@ async def valya_job(ctx):
                 for f in files:
                     f.close()
             if db.flag_get("av_sent") != "1":  # оновлене запрошення з кнопкою «Розіслати»
-                await ctx.bot.send_message(a, INVITE, parse_mode="HTML", reply_markup=M([[B(BTN_JOIN, callback_data="av:join")]]))
+                await send_invite(ctx.bot, a)
                 await ctx.bot.send_message(a, "👆 Запрошення в адвент для всіх в агенті. Розіслати?",
                                            reply_markup=M([[B("✅ Розіслати", callback_data="av:go")]]))
         except Exception as e:

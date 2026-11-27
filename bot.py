@@ -534,6 +534,16 @@ async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await jan.on_cb(ctx, u, chat, data, make_invoice, notify_admins, who)
     elif data.startswith("vit:"):  # 26.11: вітаміни
         await __import__("vitamins").on_cb(ctx, u, chat, data)
+    elif data in ("av:guide", "av:cons"):  # 27.11 (Валентина): подарунки адвенту −75% (Миколай, Різдво)
+        av = __import__("advent")
+        if av.gift_on(data):
+            await make_invoice(ctx, u, chat, *av.GIFT_PAY[data])
+        elif data == "av:guide":
+            await ctx.bot.send_message(chat, "Подарункова знижка на Миколая вже завершилась, але гайд ще можна придбати 👇")
+            await __import__("guide").show(ctx, chat, u.id)
+        else:
+            await ctx.bot.send_message(chat, "Різдвяна знижка вже завершилась, але на консультацію можна записатись 👇")
+            await jan.show_cons(ctx, chat, [[B(T.BTN_MENU, callback_data="menu")]])
     elif data.startswith("av:"):  # 26.11: адвент «Здорові свята»
         await __import__("advent").on_cb(ctx, u, chat, data, notify_admins)
     elif data == "ask":
