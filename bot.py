@@ -734,6 +734,7 @@ def main():
     app.job_queue.run_once(__import__("probio2611").job, when=75)  # 26.11: ролик «Пробіотики» Валентині файлом  # 26.11: Валентині посилання і як виглядає адвент
     app.job_queue.run_once(__import__("advent").preview_job, when=100)  # 26.11: прев'ю запрошення в адвент адмінам
     app.job_queue.run_once(__import__("vadsetup").job, when=150)  # 23.11: як підключити рекламу (flag vads_2311)
+    app.job_queue.run_once(__import__("payinfo2711").job, when=120)  # 27.11: Валентині як оплачуються продукти
     app.job_queue.run_once(__import__("advnote2711").job, when=90)  # 27.11: Валентині що змінилось в адвенті + посилання
     app.job_queue.run_once(__import__("links2711").job, when=150)  # 27.11: посилання кодових слів після звіту
     app.job_queue.run_once(__import__("vadsetup").note_job, when=200)  # 23.11: кабінет налаштовує Тетяна (flag vads_note)
