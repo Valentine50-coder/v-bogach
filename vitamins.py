@@ -23,7 +23,7 @@ PICK_3 = ("<b>Що ви отримаєте, скориставшись цією 
           "3️⃣ Посилання на вказані добавки з різних сайтів, з різною вартістю, щоб ви мали вибір\n"
           "4️⃣ Схема прийому усіх засобів з відповідним дозуванням та усіма нюансами вживання\n"
           "5️⃣ Супровід у процесі вживання засобів, при потребі <i>(доплата - 1000 грн за місяць постійного супроводу)</i>\n\n"
-          "<b>Вартість підбору - 1500 грн</b>\n"
+          "<b>Вартість підбору - {price}</b>\n"
           "Для замовлення послуги, пишіть сюди 👇")
 
 DISC_1 = ("<b>Сучасне харчування не завжди забезпечує організм усіма необхідними вітамінами та мінералами.</b>\n\n"
@@ -61,7 +61,7 @@ async def show_pick(ctx, chat, uid):
     await asyncio.sleep(3)
     await ctx.bot.send_message(chat, PICK_2, parse_mode="HTML")
     await asyncio.sleep(3)
-    await ctx.bot.send_message(chat, PICK_3, parse_mode="HTML", reply_markup=kb_pick())
+    await ctx.bot.send_message(chat, PICK_3.replace("{price}", __import__("promo").price(1500)), parse_mode="HTML", reply_markup=kb_pick())
 
 
 async def show_disc(ctx, chat, uid):

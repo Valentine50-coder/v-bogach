@@ -35,7 +35,7 @@ TEXT_2 = ("<b>У закритому телеграм-каналі на вас у
           "3 шпаргалка найшкідливіших Е-добавок\n\n"
           "4 тест на виявлення паразитів\n\n"
           "5 конспект усіх лекцій у слайдах\n"
-          f"<b>Наразі цей курс (разом із подарунками) можна придбати всього за {PRICE} грн замість {OLD} грн</b>❗")
+          "{price_line}")
 TEXT_3 = "<b>Якщо у вас лишилися питання пишіть сюди</b>👇"
 PAY_TEXT = (f"💳 <b>{NAME}</b>\n\n{PRICE} грн, доступ до закритого каналу назавжди.\n\n"
             "Після оплати агент сам надішле вам вхід у канал ❤")
@@ -65,7 +65,10 @@ async def show(ctx, chat, uid):
                 await ctx.bot.send_photo(chat, f)
         await ctx.bot.send_message(chat, TEXT_1, parse_mode="HTML")
     await asyncio.sleep(8)
-    await ctx.bot.send_message(chat, TEXT_2, parse_mode="HTML", reply_markup=kb_info())
+    promo = __import__("promo")  # 27.11: до 31.12 знижка 50% (499,5 замість 999)
+    line = (f"<b>До 31 грудня курс (разом із подарунками) зі знижкою 50%: {promo.fmt(PRICE / 2)} грн замість {PRICE} грн</b>❗"
+            if promo.on() else f"<b>Наразі цей курс (разом із подарунками) можна придбати всього за {PRICE} грн замість {OLD} грн</b>❗")
+    await ctx.bot.send_message(chat, TEXT_2.replace("{price_line}", line), parse_mode="HTML", reply_markup=kb_info())
     await ctx.bot.send_message(chat, TEXT_3, parse_mode="HTML", reply_markup=kb_ask())
 
 

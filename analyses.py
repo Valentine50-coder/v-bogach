@@ -23,7 +23,7 @@ TEXT_3 = ("<b>Що ви отримаєте в результаті такої м
           "3️⃣ <b>Детальний розбір усіх показників</b>, що базується саме на оптимальних нормах, а не лише лабораторних!!!")
 TEXT_4 = ("4️⃣<b>Глибокий  аналіз стану всього організму та всіх причинно-наслідкових зв’язків, зважаючи на результати аналізів.</b> "
           "Усі роз’яснення - доступною мовою у форматі голосових повідомлень, які що залишаться з вами назавжди і які можна переслуховувати при потребі.\n"
-          "<b>Вартість -  1980 грн</b>\n\n"
+          "<b>Вартість -  {price}</b>\n\n"
           "Для отримання розбору пишіть мені в особисті \"аналізи\"")
 
 
@@ -45,4 +45,4 @@ async def show(ctx, chat, uid):
     await ctx.bot.send_message(chat, TEXT_2, parse_mode="HTML")
     await asyncio.sleep(3)
     await ctx.bot.send_message(chat, TEXT_3, parse_mode="HTML")
-    await ctx.bot.send_message(chat, TEXT_4, parse_mode="HTML", reply_markup=kb())
+    await ctx.bot.send_message(chat, TEXT_4.replace("{price}", __import__("promo").price(1980)), parse_mode="HTML", reply_markup=kb())

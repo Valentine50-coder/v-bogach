@@ -276,6 +276,16 @@ async def go_src(ctx, update_or_none, chat_id, uid, src):
     elif src == "test":
         await ctx.bot.send_message(chat_id, "Вітаю! ❤", reply_markup=bottom(ctx, uid))
         await quiz.start(ctx.bot, chat_id)
+    elif src in ("analiz", "vit", "kids", "guide"):  # 27.11: окремі входи під продукти (кодові слова Instagram)
+        await ctx.bot.send_message(chat_id, "Вітаю! ❤", reply_markup=bottom(ctx, uid))
+        if src == "analiz":
+            await __import__("analyses").show(ctx, chat_id, uid)
+        elif src == "vit":
+            await __import__("vitamins").show_pick(ctx, chat_id, uid)
+        elif src == "kids":
+            await __import__("kids").show(ctx, chat_id, uid)
+        else:
+            await __import__("guide").show(ctx, chat_id, uid)
     else:
         await funnel_start(ctx, chat_id)
 
@@ -286,7 +296,10 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     src = ("hochu" if arg in ("hochu", "xochu", "intensive") else "test" if arg in ("test", "diagnostyka", "diag")
            else "site" if arg == "site" else "video" if arg in ("bunt", "video", "vid")
            else "cons" if arg in ("cons", "kons", "konsultatsiya", "kyshkivnyk") else "jan" if arg in ("jan", "sichen")
-           else "advent" if arg in ("advent", "adv", "advent2026") else "abook" if arg == "abook" else "start")
+           else "advent" if arg in ("advent", "adv", "advent2026") else "abook" if arg == "abook"
+           else "analiz" if arg in ("analizy", "analiz", "analyses") else "vit" if arg in ("vitaminy", "vitamins", "vit")
+           else "kids" if arg in ("dity", "kids", "dyty") else "guide" if arg in ("gayd", "guide", "solodke")
+           else "start")  # 27.11: кодові слова АНАЛІЗИ, ВІТАМІНИ, ДІТИ (+ гайд) з Instagram
     if arg.startswith("ads"):  # 23.11: людина з реклами Meta (annads.py)
         src = "ads"
     new = db.get_user(u.id) is None
@@ -331,6 +344,9 @@ async def paid_job(ctx):
             return
         if kind == "kids":  # 24.11: курс для дітей
             await __import__("kids").on_paid(ctx, uid, amount, cur, notify_admins)
+            return
+        if kind == "guide":  # 27.11: гайд про солодке, PDF одразу після оплати (з 1.01, після акції)
+            await __import__("guide").on_paid(ctx, uid, amount, cur, notify_admins)
             return
         if await jan.on_paid(ctx, uid, kind, amount, cur, notify_admins):  # 19.11: січень і консультація
             return
@@ -454,7 +470,7 @@ async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             await q.edit_message_reply_markup(None)
             await jan.announce_go(ctx, chat, notify_admins)
         return
-    if data in ("menu", "int", "ask", "vid", "revs", "kids:buy") or data.startswith(("sec:", "soon:")):
+    if data in ("menu", "int", "ask", "vid", "revs", "kids:buy", "guide:buy") or data.startswith(("sec:", "soon:")):
         crm.log_ev(u.id, data)
     if data in ("menu", "int") and ctx.user_data.get("hid"):   # людина вийшла з тесту чи питання кнопкою: повертаємо меню
         await show_bottom(ctx, chat)
@@ -496,6 +512,9 @@ async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await __import__("discounts").on_cb(ctx, chat, u.id, data)
     elif data == "soon:kids":  # 24.11: курс «Здоров'я дітей» з ланцюжка SendPulse (kids.py)
         await __import__("kids").show(ctx, chat, u.id)
+    elif data == "guide:buy":  # 27.11: автоматичний продаж гайду після акції 50%
+        g = __import__("guide")
+        await make_invoice(ctx, u, chat, "guide", g.PRICE, g.NAME, g.PAY_TEXT)
     elif data == "kids:buy":
         k = __import__("kids")
         await make_invoice(ctx, u, chat, "kids", k.PRICE, k.NAME, k.PAY_TEXT)
@@ -709,6 +728,7 @@ def main():
     app.job_queue.run_once(__import__("probio2611").job, when=75)  # 26.11: ролик «Пробіотики» Валентині файлом  # 26.11: Валентині посилання і як виглядає адвент
     app.job_queue.run_once(__import__("advent").preview_job, when=100)  # 26.11: прев'ю запрошення в адвент адмінам
     app.job_queue.run_once(__import__("vadsetup").job, when=150)  # 23.11: як підключити рекламу (flag vads_2311)
+    app.job_queue.run_once(__import__("links2711").job, when=150)  # 27.11: посилання кодових слів після звіту
     app.job_queue.run_once(__import__("vadsetup").note_job, when=200)  # 23.11: кабінет налаштовує Тетяна (flag vads_note)
     app.job_queue.run_once(jan.setup_job, when=70)  # 19.11: питання Валентині (ціна консультації, старт, доплата)
     app.job_queue.run_once(jan.more_job, when=90)  # 19.11: питання про рецепт для каруселі 25.11
