@@ -58,7 +58,7 @@ i.s{{font-family:Lora;font-style:italic;font-weight:500;letter-spacing:0}}
 .wf{{display:inline-block;position:relative;background:{t['acc2']};color:{t['dark']};font-weight:900;font-size:56px;letter-spacing:4px;
   padding:14px 64px 14px 36px;clip-path:polygon(0 0,100% 0,88% 50%,100% 100%,0 100%)}}
 .wg{{font-weight:900;font-size:70px;letter-spacing:3px;text-shadow:0 0 28px {t['acc2']},0 0 10px {t['acc2']}}}
-.ws{{position:absolute;right:46px;top:50%;transform:translateY(-50%) rotate(90deg);transform-origin:center;font-weight:900;font-size:60px;letter-spacing:10px;color:{t['acc2']}}}
+.ws{{position:absolute;right:50px;top:120px;bottom:120px;writing-mode:vertical-rl;text-align:center;font-weight:900;font-size:64px;letter-spacing:10px;color:{t['acc2']}}}
 .disc{{position:absolute;left:56px;right:56px;bottom:30px;font-size:19px;opacity:.7}}
 .big{{font-size:170px;font-weight:900;line-height:.9;color:{t['acc']}}}
 """
