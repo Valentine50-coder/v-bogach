@@ -22,7 +22,12 @@ import db
 
 log = logging.getLogger("jan")
 TZ = ZoneInfo("Europe/Kyiv")
-BOOK, EARLY, FULL, SEATS = 350, 750, C.INTENSIVE_AMOUNT, 20
+BOOK, EARLY, FULL, SEATS = 350, 750, C.INTENSIVE_AMOUNT, 20  # старі (бронь/750/1444), лишились для старих станів
+# 27.11 (Валентина): ціна участі в січневому інтенсиві без доплат: до 30.11 350, 1-31.12 499, з січня 1748
+P_NOV, P_DEC, P_AFTER = 350, 499, 1748
+NOV_END = datetime(2026, 11, 30, 23, 59, 59, tzinfo=TZ)
+DEC_END = datetime(2026, 12, 31, 23, 59, 59, tzinfo=TZ)
+PRICE_LINE = "Вартість участі: <code>350 грн</code> до 30 листопада, <code>499 грн</code> з 1 по 31 грудня <i>(з січня 1748 грн)</i>"
 ADV_BOOK = 159  # 26.11 (Валентина через Тетяну): бронь за спецціною для адвенту «Здорові свята», kind jba
 CONS_UNTIL = datetime(2026, 12, 31, 23, 59, tzinfo=TZ)  # 27.11: знижка 50% на все до 31.12 (Валентина)
 _BG = set()
@@ -30,10 +35,9 @@ _BG = set()
 # ---------- тексти ----------
 BTN_CONS = "📅 ЗАПИСАТИСЬ НА КОНСУЛЬТАЦІЮ"
 BTN_JAN = "🧠 Група на січень"
-BTN_BOOK = f"Забронювати місце: {BOOK} грн"
+BTN_BOOK = "Оплатити участь"
 CLOSED = ("<b>Увага: набір учасників інтенсиву на листопад закрито</b> ❗️\n\n"
-          "Наразі йде <b>запис у групу на січень</b>. Вартість бронювання <code>350 грн</code>. "
-          "Повна вартість <b>для перших 20 учасників</b> <code>750 грн</code> 🔥")
+          "Наразі йде <b>запис у групу на січень</b>. " + PRICE_LINE + " 🔥")
 CONS_LINE = ("Якщо вам уже зараз потрібна допомога, можете записатись на <b>індивідуальну консультацію Валентини "
              "з 50% знижкою</b> <i>(до 31 грудня)</i> ‼️")
 ANNOUNCE = CLOSED + "\n\n" + CONS_LINE
@@ -42,13 +46,10 @@ JAN_TERMS = ("<b>ГРУПА НА СІЧЕНЬ</b>\n\n"
              "‼️ Спеціальний <b>Telegram-канал</b> із відео, гайдами, рецептами <b>з доступом назавжди</b>\n"
              "✓ Постійно діючий чат підтримки з авторкою та тренерами\n"
              "✓ Повноцінний курс + мініконсультації + супровід\n\n"
-             "Бронювання місця: <code>350 грн</code>\n"
-             "Повна вартість <b>для перших 20 учасників</b>: <code>750 грн</code> 🔥 <i>(далі 1444 грн)</i>")
-URGENT = "\n\n‼️ <b>Ціна 750 грн тільки для перших 20 учасників.</b> <i>Кількість місць обмежена</i> ❗"
-PAY_CHOICE = ("<b>Як вам зручніше?</b>\n\n"
-              "<b>Забронювати місце:</b> <code>350 грн</code> зараз, решту доплатите ближче до старту\n"
-              "<b>Оплатити повністю:</b> <code>{full} грн</code>{note}\n\n"
-              "<i>У будь-якому разі ваше місце в групі на січень закріплюється одразу після оплати.</i>")
+             + PRICE_LINE)
+URGENT = "\n\n‼️ <b>Ціна росте:</b> <i>350 грн тільки до 30 листопада, у грудні 499, з січня 1748</i> ❗"
+PAY_CHOICE = ("<b>Участь у групі на січень зараз коштує</b> <code>{full} грн</code> <i>(з січня 1748 грн)</i>. Без жодних доплат.\n\n"
+              "<i>Ваше місце закріплюється одразу після оплати.</i>")
 BOOKED = ("✅ <b>Місце в групі на січень заброньовано!</b> Дякую ❤\n\n"
           "Ваша повна вартість <code>{total} грн</code>, тобто доплатити лишається <code>{rest} грн</code>. "
           "Я нагадаю ближче до старту, а можна доплатити й зараз кнопкою нижче.\n\n"
@@ -127,13 +128,17 @@ def early():
     return taken() < SEATS
 
 
+def price_now():
+    n = now()
+    return P_NOV if n <= NOV_END else P_DEC if n <= DEC_END else P_AFTER
+
+
 def full_price():
-    return EARLY if early() else FULL
+    return price_now()
 
 
 def seats_line():
-    left = SEATS - taken()
-    return f"\n\n🔥 За ціною 750 грн лишилось місць: <b>{left}</b> з {SEATS}" if left > 0 else ""
+    return ""  # 27.11: місць за 750 більше немає, ціна залежить від дати
 
 
 def start_line():
@@ -149,9 +154,8 @@ def kb_cons_jan(extra=None):
 # ---------- показ ----------
 async def show_jan(ctx, chat, kb_back):
     __import__("crm").log_ev(chat, "jan")
-    await ctx.bot.send_message(chat, CLOSED + "\n\n" + start_line() + JAN_TERMS + seats_line(), parse_mode="HTML",
-                               reply_markup=M([[B(BTN_BOOK, callback_data="jn:book")],
-                                               [B(f"Оплатити повністю: {full_price()} грн", callback_data="jn:full")],
+    await ctx.bot.send_message(chat, CLOSED.split(" Вартість участі")[0] + "\n\n" + start_line() + JAN_TERMS, parse_mode="HTML",
+                               reply_markup=M([[B(f"Оплатити участь: {price_now()} грн", callback_data="jn:full")],
                                                [B(BTN_CONS, callback_data="cons")]] + kb_back))
 
 
@@ -167,17 +171,17 @@ async def show_cons(ctx, chat, kb_back):
 
 
 async def pay_choice(ctx, chat, kb_back):
-    fp = full_price()
-    note = " <i>(ціна для перших 20 учасників)</i>" if fp == EARLY else ""
-    await ctx.bot.send_message(chat, PAY_CHOICE.format(full=fp, note=note) + seats_line(), parse_mode="HTML",
-                               reply_markup=M([[B(BTN_BOOK, callback_data="jn:book")],
-                                               [B(f"Оплатити повністю: {fp} грн", callback_data="jn:full")],
+    fp = price_now()
+    await ctx.bot.send_message(chat, PAY_CHOICE.format(full=fp), parse_mode="HTML",
+                               reply_markup=M([[B(f"Оплатити участь: {fp} грн", callback_data="jn:full")],
                                                [B(BTN_CONS, callback_data="cons")]] + kb_back))
 
 
 # ---------- кнопки ----------
 async def on_cb(ctx, u, chat, data, make_invoice, notify_admins, who):
     st = db.flag_get(f"jan:{u.id}") or ""
+    if data == "jn:book":  # 27.11: броні більше немає, стара кнопка = оплата участі
+        data = "jn:full"
     if data == "jn:book":
         if st:
             await ctx.bot.send_message(chat, "Ваше місце в групі на січень уже закріплене ❤")
@@ -188,21 +192,23 @@ async def on_cb(ctx, u, chat, data, make_invoice, notify_admins, who):
         if st:
             await ctx.bot.send_message(chat, "Ваше місце в групі на січень уже закріплене ❤")
             return
-        await make_invoice(ctx, u, chat, "jba", ADV_BOOK, "Бронювання місця в групі на січень «Здоровий кишківник» (ціна адвенту)",
-                           "Ось посилання на бронювання за ціною адвенту 👇 Після оплати поверніться в цей чат, протягом хвилини я все підтверджу ❤")
+        await make_invoice(ctx, u, chat, "jba", ADV_BOOK, "Участь у групі на січень «Здоровий кишківник» (ціна адвенту)",
+                           "Ось посилання на оплату участі за ціною адвенту 👇 Після оплати поверніться в цей чат, протягом хвилини я все підтверджу ❤")
     elif data == "jn:full":
         if st == "f":
             await ctx.bot.send_message(chat, "Групу на січень у вас уже оплачено повністю ❤")
             return
-        if st.startswith("b"):
-            await _rest(ctx, u, chat, st, make_invoice)
+        if st.startswith("b"):  # 27.11: хто вже забронював, тепер учасник без доплати
+            db.flag_set(f"jan:{u.id}", "f")
+            await ctx.bot.send_message(chat, "Ваше місце в групі на січень уже оплачене, доплачувати нічого не потрібно ❤")
             return
         fp = full_price()
         await make_invoice(ctx, u, chat, f"jf{fp}", fp, "Група на січень «Здоровий кишківник»",
                            "Ось посилання на оплату 👇 Після оплати поверніться в цей чат, протягом хвилини я все підтверджу ❤")
     elif data == "jn:rest":
         if st.startswith("b"):
-            await _rest(ctx, u, chat, st, make_invoice)
+            db.flag_set(f"jan:{u.id}", "f")
+            await ctx.bot.send_message(chat, "Ваше місце в групі на січень уже оплачене, доплачувати нічого не потрібно ❤")
     elif data == "jn:cons":
         amt = cons_amount()
         if not amt:
@@ -229,6 +235,13 @@ async def on_paid(ctx, uid, kind, amount, cur, notify_admins):
     u = db.get_user(uid)
     name = (u["name"] if u else "") + (f" @{u['username']}" if u and u["username"] else "")
     crm = __import__("crm")
+    if kind == "jba":  # 27.11: участь за ціною адвенту 159, без доплати
+        db.flag_set(f"jan:{uid}", "f")
+        db.set_field(uid, "course_paid", 1)
+        crm.log_ev(uid, "paid", f"{amount}|січень (адвент)")
+        await _send(ctx, uid, PAID_FULL)
+        await notify_admins(ctx, f"✅ Група на січень за ціною адвенту: {amount} {cur}. {name} (ID {uid}).")
+        return True
     if kind in ("jb", "jba"):
         total = EARLY if early() else FULL
         book = ADV_BOOK if kind == "jba" else BOOK
@@ -247,7 +260,7 @@ async def on_paid(ctx, uid, kind, amount, cur, notify_admins):
         crm.log_ev(uid, "paid", f"{amount}|{'доплата' if kind == 'jr' else 'повністю'} січень")
         await _send(ctx, uid, PAID_FULL)
         await notify_admins(ctx, f"✅ Група на січень {'доплата' if kind == 'jr' else 'повністю'}: {amount} {cur}. {name} (ID {uid}). "
-                                 f"Зайнято місць: {taken()} з {SEATS} за 750.")
+                                 f"Усього учасників: {taken()}.")
         return True
     if kind == "cons":
         db.flag_set(f"cons:{uid}", "paid")

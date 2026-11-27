@@ -22,9 +22,9 @@ def img(path):
 
 THEMES = {
     # синій Валентини (стиль «як в Ольги»: фото на весь слайд, курсив, плашки)
-    "blue": dict(bg="#f4f6ff", ink="#121a3d", acc="#2338c4", acc2="#ff8fb4", soft="#e4e8fb", dark="#141c5c"),
+    "blue": dict(bg="#f4f6ff", ink="#121a3d", acc="#2338c4", acc2="#8fb0ff", soft="#e4e8fb", dark="#141c5c"),
     # зелений адвенту
-    "green": dict(bg="#f2f8f3", ink="#0f3d2e", acc="#1d6b47", acc2="#e8457f", soft="#e3f3e8", dark="#0f3d2e"),
+    "green": dict(bg="#f2f8f3", ink="#0f3d2e", acc="#1d6b47", acc2="#8fdcb0", soft="#e3f3e8", dark="#0f3d2e"),
 }
 
 
@@ -42,9 +42,9 @@ h1{{font-size:88px;font-weight:800;line-height:1.02;letter-spacing:-2px}}
 h2{{font-size:64px;font-weight:800;line-height:1.06;letter-spacing:-1.2px}}
 i.s{{font-family:Lora;font-style:italic;font-weight:500;letter-spacing:0}}
 .ac{{color:{t['acc']}}} .ac2{{color:{t['acc2']}}}
-.hl{{background:linear-gradient(transparent 58%,{t['acc2']}88 58%);padding:0 4px}}
+.hl{{background:linear-gradient(transparent 58%,{t['acc']}33 58%);padding:0 4px}}
 .pl{{display:inline-block;background:{t['acc']};color:#fff;font-weight:800;font-size:24px;letter-spacing:1.5px;padding:9px 18px;border-radius:10px}}
-.pl2{{display:inline-block;background:{t['acc2']};color:#fff;font-weight:800;font-size:24px;padding:6px 14px;border-radius:8px}}
+.pl2{{display:inline-block;background:rgba(255,255,255,.92);color:{t['acc']};font-weight:800;font-size:24px;letter-spacing:1px;padding:8px 16px;border-radius:8px}}
 .p{{font-size:35px;line-height:1.48}}
 .p b{{font-weight:800}}
 .p+.p{{margin-top:22px}}
@@ -53,7 +53,12 @@ i.s{{font-family:Lora;font-style:italic;font-weight:500;letter-spacing:0}}
 .ph{{position:absolute;border-radius:30px;overflow:hidden;box-shadow:0 20px 50px rgba(15,20,60,.25)}}
 .ph img{{width:100%;height:100%;object-fit:cover}}
 .cta{{background:{t['dark']};color:#fff}}
-.word{{display:inline-block;background:#fff;color:{t['acc2']};font-weight:900;font-size:96px;letter-spacing:3px;padding:12px 48px;border-radius:24px}}
+.wq{{font-family:Lora;font-style:italic;font-weight:600;font-size:92px;line-height:1}}
+.wq u{{text-decoration:none;border-bottom:4px solid {t['acc2']};padding-bottom:6px}}
+.wf{{display:inline-block;position:relative;background:{t['acc2']};color:{t['dark']};font-weight:900;font-size:56px;letter-spacing:4px;
+  padding:14px 64px 14px 36px;clip-path:polygon(0 0,100% 0,88% 50%,100% 100%,0 100%)}}
+.wg{{font-weight:900;font-size:70px;letter-spacing:3px;text-shadow:0 0 28px {t['acc2']},0 0 10px {t['acc2']}}}
+.ws{{position:absolute;right:46px;top:50%;transform:translateY(-50%) rotate(90deg);transform-origin:center;font-weight:900;font-size:60px;letter-spacing:10px;color:{t['acc2']}}}
 .disc{{position:absolute;left:56px;right:56px;bottom:30px;font-size:19px;opacity:.7}}
 .big{{font-size:170px;font-weight:900;line-height:.9;color:{t['acc']}}}
 """
@@ -106,11 +111,11 @@ S1 = [
 </div>"""),
     page("blue", f"""{top(6, T, True)}
 <div style="position:absolute;left:70px;right:70px;top:180px">
-  <h2>Як вийти з цього кола <i class="s ac2">без зриву?</i></h2>
+  <h2>Як вийти з цього кола <i class="s">без&nbsp;зриву?</i></h2>
   <div class="p" style="margin-top:28px;color:#dfe4ff">У гайді <b style="color:#fff">«Як приборкати тягу до солодкого»</b> я розібрала 7 справжніх причин тяги, приховані цукри в продуктах і безпечні альтернативи смаколикам.</div>
   <div class="p" style="color:#dfe4ff">До 31 грудня <b style="color:#fff">310,5 грн</b> замість 621.</div>
-  <div class="p" style="margin-top:44px">Напишіть у коментарях</div>
-  <div style="margin-top:20px"><span class="word">ЦУКОР</span></div>
+  <div class="p" style="margin-top:50px">Напишіть у коментарях слово <span class="wq"><u>«Цукор»</u></span></div>
+  <div class="p" style="color:#dfe4ff">і я надішлю вам усе про гайд ❤</div>
 </div>""", "cta"),
 ]
 
@@ -132,7 +137,7 @@ S2 = [
 <div class="ph" style="left:56px;top:110px;width:520px;height:700px"><img src="{img('advent/prev/1_kalendar.jpg')}" style="object-position:top"></div>
 <div style="position:absolute;left:610px;right:56px;top:160px">
   <span class="pl">З 1 ГРУДНЯ</span>
-  <h2 style="margin-top:24px;font-size:56px">31 віконце <i class="s ac2">«Здорові свята»</i></h2>
+  <h2 style="margin-top:24px;font-size:56px">31 віконце <i class="s ac">«Здорові свята»</i></h2>
 </div>
 <div style="position:absolute;left:70px;right:70px;top:860px" class="p">Щоранку о 9:00 відкривається одне віконце: святковий рецепт з мого збірника <b>без цукру, глютену і лактози</b> або підказка, як пройти застілля без переїдання.</div>"""),
     page("green", f"""<div class="full"><img src="{img('advent/r/r14.jpg')}" style="object-position:center 35%"></div><div class="shade"></div>{top(4, T, True)}
@@ -143,7 +148,7 @@ S2 = [
     page("green", f"""{top(5, T)}
 <div class="ph" style="right:56px;bottom:90px;width:460px;height:690px"><img src="{img('g-049.jpg')}" style="object-position:top"></div>
 <div style="position:absolute;left:70px;width:500px;top:150px">
-  <h2>А на Святвечір <i class="s ac2">подарунок</i> 🎁</h2>
+  <h2>А на Святвечір <i class="s ac">подарунок</i> 🎁</h2>
   <div class="p" style="margin-top:28px">Моє <b>«Здорове меню на тиждень»</b>: сніданки, обіди, вечері і конструктор здорової тарілки, щоб після свят повернутись у ритм легко.</div>
   <div class="p" style="font-size:28px;margin-top:30px;opacity:.85">Валентина Швець, нутриціолог, 15+ років допомагаю сім'ям жити без харчових залежностей і хвороб</div>
 </div>"""),
@@ -151,7 +156,7 @@ S2 = [
 <div style="position:absolute;left:70px;right:70px;top:230px">
   <h2>Хочете такий грудень?</h2>
   <div class="p" style="margin-top:34px">Напишіть у коментарях</div>
-  <div style="margin-top:22px"><span class="word">АДВЕНТ</span></div>
+  <div style="margin-top:22px"><span class="wf">АДВЕНТ</span></div>
   <div class="p" style="margin-top:36px;color:#e3f3e8">і я надішлю вам календар. Перше віконце відкриється 1 грудня о 9:00 ❤</div>
 </div>""", "cta"),
 ]
