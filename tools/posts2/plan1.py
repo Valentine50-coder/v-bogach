@@ -70,7 +70,7 @@ def rows(items):
                    for a, b, c in items)
 
 
-DISC = '<div class="disc">Інформація має ознайомчий характер і не замінює особистої консультації.</div>'
+DISC = ''
 
 # ---------- p1: ⚡ продаючий, насичений синій ----------
 P1 = [
@@ -113,7 +113,7 @@ P1 = [
   <div class="sub" style="margin-top:30px">Напишіть у коментарях</div>
   <div style="margin-top:26px"><span class="word">44</span></div>
   <div class="sub" style="margin-top:36px">і я підкажу, що підійде саме вам ❤</div>
-</div>{DISC}<div class="foot">{NAME}</div>""", "cta"),
+</div><div class="foot">{NAME}</div>""", "cta"),
 ]
 
 # ---------- p2: 📌 для зберігання, стиль «Ольга Ейдель» у кольорах Валентини ----------
@@ -199,7 +199,7 @@ P2 = [
   <div class="tx" style="margin-top:24px">у моєму гайді «Як приборкати тягу до солодкого». <b>До 31 грудня 310,5 грн замість 621.</b></div>
   <div style="margin-top:34px"><span class="btn">Напишіть у коментарях 44</span></div>
 </div>
-<div class="disc" style="color:#fff">Інформація має ознайомчий характер і не замінює особистої консультації.</div>"""),
+"""),
 ]
 
 # ---------- p3: 💥 руйнівник міфів, зелений ----------
@@ -238,7 +238,7 @@ P3 = [
   <div class="sub" style="margin-top:40px">Напишіть у коментарях</div>
   <div style="margin-top:24px"><span class="word">44</span></div>
   <div class="sub" style="margin-top:34px">і я розповім, як записатися ❤</div>
-</div>{DISC}<div class="foot">{NAME}</div>""", "cta"),
+</div><div class="foot">{NAME}</div>""", "cta"),
 ]
 
 

@@ -104,7 +104,7 @@ A1 = [
   <div style="margin-top:30px"><span class="word">АДВЕНТ</span></div>
   <div class="sub" style="margin-top:40px">і я надішлю вам свій адвент «Здорові свята» ❤<br>А на Святвечір на вас чекає <b style="color:#fff">подарунок</b> 🎁</div>
 </div>
-<div class="disc">Інформація має ознайомчий характер і не замінює особистої консультації.</div>
+
 <div class="foot">{NAME}</div>""", "cta"),
 ]
 
@@ -149,7 +149,7 @@ A2 = [
   <div style="margin-top:26px"><span class="word">АДВЕНТ</span></div>
   <div class="sub" style="margin-top:34px">і я надішлю його вам ❤</div>
 </div>
-<div class="disc">Інформація має ознайомчий характер і не замінює особистої консультації.</div>
+
 <div class="foot">{NAME}</div>""", "cta"),
 ]
 

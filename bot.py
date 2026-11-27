@@ -298,7 +298,7 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
            else "cons" if arg in ("cons", "kons", "konsultatsiya", "kyshkivnyk") else "jan" if arg in ("jan", "sichen")
            else "advent" if arg in ("advent", "adv", "advent2026") else "abook" if arg == "abook"
            else "analiz" if arg in ("analizy", "analiz", "analyses") else "vit" if arg in ("vitaminy", "vitamins", "vit")
-           else "kids" if arg in ("dity", "kids", "dyty") else "guide" if arg in ("gayd", "guide", "solodke")
+           else "kids" if arg in ("dity", "kids", "dyty") else "guide" if arg in ("cukor", "tsukor", "sugar", "gayd", "guide", "solodke")
            else "start")  # 27.11: кодові слова АНАЛІЗИ, ВІТАМІНИ, ДІТИ (+ гайд) з Instagram
     if arg.startswith("ads"):  # 23.11: людина з реклами Meta (annads.py)
         src = "ads"

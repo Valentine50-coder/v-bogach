@@ -64,7 +64,7 @@ font-weight:800;font-size:17px;box-shadow:0 8px 16px rgba(29,91,60,.25);transiti
 <div class="info" id="info"></div>
 <div class="grid" id="grid"></div>
 <div class="legend">🎁 24 грудня подарунок · кожне віконце відкривається у свій день о 9:00</div>
-<div class="note">Валентина Швець · нутриціолог, health-коуч<br>Меню не замінює особистої консультації спеціаліста</div>
+<div class="note">Валентина Швець · нутриціолог, health-коуч</div>
 </div>
 <div class="ov" id="ov" onclick="if(event.target.id==='ov')cl()"><div class="card" id="card"></div></div>
 <script>
