@@ -63,7 +63,7 @@ HIDE = ReplyKeyboardRemove()
 
 async def ensure_bottom(ctx, uid, chat):
     """10.11: хто має старе меню (до оновлення), отримує нове при першій дії, без розсилки."""
-    if not ctx.user_data.get("hid") and db.flag_get(f"bm5:{uid}") != "1":
+    if not ctx.user_data.get("hid") and db.flag_get(f"bm6:{uid}") != "1":
         await show_bottom(ctx, chat)
 
 
@@ -75,19 +75,19 @@ def hide(ctx):
 
 def bottom(ctx, uid):
     ctx.user_data.pop("hid", None)
-    db.flag_set(f"bm5:{uid}", "1")
+    db.flag_set(f"bm6:{uid}", "1")
     return kb_bottom(is_admin(uid))
 
 
 async def show_bottom(ctx, chat_id, text=None):
     ctx.user_data.pop("hid", None)
-    db.flag_set(f"bm5:{chat_id}", "1")
+    db.flag_set(f"bm6:{chat_id}", "1")
     await ctx.bot.send_message(chat_id, text or T.MENU_BACK, reply_markup=kb_bottom(is_admin(chat_id)), parse_mode="HTML")
 
 
 BOTTOM = {t: code for row in T.BTN_BOTTOM for t, code in row}
 BOTTOM.update({"Про Валентину": "author", "Про запуск": "launch", "🎯 Для кого": "for", "Програма": "program",  # 12.11: старі назви
-               "🎁 Що ви отримаєте": "get", "Умови і ціна": "terms", "💳 Оплатити": "pay", "💳 ОПЛАТИТИ": "pay", "🏠 Меню": "home",
+               "🎁 Що ви отримаєте": "get", "Умови і ціна": "terms", "💳 Оплатити": "pay", "💳 ОПЛАТИТИ": "pay", "🏠 Меню": "home", "🏠 МЕНЮ": "home",
                "ПРО ЗАПУСК": "launch", "🎯 ДЛЯ КОГО": "for", "ПРОГРАМА": "program", "🎁 ЩО ВИ ОТРИМАЄТЕ": "get",  # 24.11: старе меню
                "УМОВИ І ЦІНА": "terms"})
 SOON_MODS = {"guide": "guide", "kids": "kids", "support": "support", "analyses": "analyses", "discounts": "discounts"}  # 24.11
@@ -170,8 +170,6 @@ def who(u):
 async def funnel_start(ctx, chat_id):
     if not await send_photo(ctx, chat_id, "start.jpg", T.START_1, bottom(ctx, chat_id)):
         await ctx.bot.send_message(chat_id, T.START_1, reply_markup=bottom(ctx, chat_id))
-    await ctx.bot.send_chat_action(chat_id, "typing")
-    await asyncio.sleep(5)
     await ctx.bot.send_message(chat_id, T.START_2, reply_markup=kb_start(is_admin(chat_id)), parse_mode="HTML")
 
 
@@ -180,9 +178,7 @@ async def funnel_intensive(ctx, chat_id):
     if not await send_photo(ctx, chat_id, "intensive.jpg", T.INT_AUTHOR):
         await ctx.bot.send_message(chat_id, T.INT_AUTHOR, parse_mode="HTML")
     for part in (T.INT_FOR, T.INT_PROGRAM, T.INT_GET):
-        await asyncio.sleep(2)
         await ctx.bot.send_message(chat_id, part, parse_mode="HTML")
-    await asyncio.sleep(2)
     await ctx.bot.send_message(chat_id, T.INT_TERMS + T.URGENT, reply_markup=kb_intensive(), parse_mode="HTML")
 
 
@@ -514,7 +510,7 @@ async def on_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await __import__("kids").show(ctx, chat, u.id)
     elif data == "guide:buy":  # 27.11: автоматичний продаж гайду після акції 50%
         g = __import__("guide")
-        await make_invoice(ctx, u, chat, "guide", g.PRICE, g.NAME, g.PAY_TEXT)
+        await make_invoice(ctx, u, chat, "guide", g.price_now(), g.NAME, g.pay_text())
     elif data == "kids:buy":
         k = __import__("kids")
         await make_invoice(ctx, u, chat, "kids", k.PRICE, k.NAME, k.PAY_TEXT)

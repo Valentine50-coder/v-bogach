@@ -1,11 +1,9 @@
-"""24.11.2026: кнопка старту «Гайд «Як приборкати...»» = гайд Валентини «Як позбутися тяги до солодкого».
+"""27.11: оплата через WayForPay одразу і під час акції (310,5), гайд приходить сам. 24.11.2026: кнопка старту «Гайд «Як приборкати...»» = гайд Валентини «Як позбутися тяги до солодкого».
 27.11 (Тетяна): PDF гайду в media/gayd_solodke.pdf. До 31.12 акція 50% (310,5 грн замість 621): кнопка «Написати»
 Валентині зі словом «гайд», продаж веде вона сама. З 1.01 автоматично: рахунок WayForPay на 621 грн (kind "guide"),
 після оплати агент сам надсилає PDF (file_id у kv guide_fid) і пише адмінам, хто купив."""
-import asyncio
 import logging
 import os
-from urllib.parse import quote
 
 from telegram import InlineKeyboardButton as B, InlineKeyboardMarkup as M
 
@@ -29,17 +27,39 @@ TEXT_2 = ("<b>У гайді я розкриваю:</b>\n"
           "✅<i>приховані цукри в продуктах</i>\n"
           "✅<i>рейтинг солодощів (від найшкідливіших до найкорисніших)</i>\n"
           "✅<i>безпечні альтернативи шкідливим смаколикам</i>")
-TEXT_PROMO = ("<b>До 31 грудня гайд зі знижкою 50%: <s>621 грн</s> 310,5 грн</b> ‼️\n\n"
-              "Щоб придбати, напишіть мені «гайд» 👇")
-TEXT_BUY = f"<b>Придбати гайд «Як приборкати тягу до солодкого»: {PRICE} грн</b> 👇\n\n<i>Після оплати агент одразу надішле вам гайд</i> ❤"
-PAY_TEXT = (f"💳 <b>{NAME}</b>\n\n{PRICE} грн. Після оплати агент одразу надішле вам гайд у PDF ❤")
+# 27.11 (Тетяна): більше про гайд, з самого гайду (media/gayd_solodke.pdf)
+TEXT_MORE = ("<b>Мої власні результати здорових стосунків з цукром:</b>\n"
+             "• вага і глюкоза в нормі\n"
+             "• достатній рівень енергії\n"
+             "• немає бажання їсти солодке, навіть коли вдома є смаколики\n"
+             "• мій біологічний вік <b>майже удвічі менший</b> за паспортний\n\n"
+             "🎁 <b>У додатках:</b> рейтинг солодощів і <b>рецепти корисних смаколиків</b>\n"
+             "📎 <i>41 сторінка, PDF, залишається з вами назавжди</i>")
 PAID = "✅ <b>Оплату отримано, дякую!</b> ❤\n\nОсь ваш гайд «Як приборкати тягу до солодкого» 👇"
 
 
-def kb():
+def price_now():
+    """27.11: до 31.12 знижка 50% (310,5), далі 621."""
+    return PRICE / 2 if promo.on() else PRICE
+
+
+def price_line():
     if promo.on():
-        return M([[B("Написати", url=f"{ME}?text={quote('гайд')}")], [B("☰ Меню", callback_data="menu")]])
-    return M([[B(f"Придбати за {PRICE} грн", callback_data="guide:buy")], [B("☰ Меню", callback_data="menu")]])
+        return f"<b>До 31 грудня гайд зі знижкою 50%: <s>{PRICE} грн</s> {promo.fmt(price_now())} грн</b> ‼️"
+    return f"<b>Вартість гайду: {PRICE} грн</b>"
+
+
+def full_text():
+    return "\n\n".join([TEXT_2, TEXT_MORE, price_line(), "<i>Після оплати агент одразу надішле вам гайд</i> ❤"])
+
+
+def pay_text():
+    return f"💳 <b>{NAME}</b>\n\n{promo.fmt(price_now())} грн. Після оплати агент одразу надішле вам гайд у PDF ❤"
+
+
+def kb():
+    """27.11 (Тетяна): оплата одразу через WayForPay Валентини і автоматична видача, без «Написати»; замість «Меню» «Мої послуги»."""
+    return M([[B(f"💳 Придбати за {promo.fmt(price_now())} грн", callback_data="guide:buy")], [B("💚 Мої послуги", callback_data="menu")]])
 
 
 async def show(ctx, chat, uid):
@@ -49,9 +69,7 @@ async def show(ctx, chat, uid):
             await ctx.bot.send_photo(chat, f, caption=TEXT_1, parse_mode="HTML")
     else:
         await ctx.bot.send_message(chat, TEXT_1, parse_mode="HTML")
-    await asyncio.sleep(5)
-    await ctx.bot.send_message(chat, TEXT_2, parse_mode="HTML")
-    await ctx.bot.send_message(chat, TEXT_PROMO if promo.on() else TEXT_BUY, parse_mode="HTML", reply_markup=kb())
+    await ctx.bot.send_message(chat, full_text(), parse_mode="HTML", reply_markup=kb())  # 27.11: одразу, без паузи
 
 
 async def send_pdf(bot, uid):

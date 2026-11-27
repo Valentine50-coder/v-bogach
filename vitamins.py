@@ -48,7 +48,7 @@ SHOPS = [
 def kb_pick():
     return M([[B("Замовити", url=f"{ME}?text={quote('вітаміни')}")],
               [B("Знижки на вітаміни", callback_data="vit:disc")],
-              [B("☰ Меню", callback_data="menu")]])
+              [B("💚 Мої послуги", callback_data="menu")]])
 
 
 async def show_pick(ctx, chat, uid):
@@ -58,22 +58,17 @@ async def show_pick(ctx, chat, uid):
             await ctx.bot.send_photo(chat, f, caption=PICK_1, parse_mode="HTML")
     else:
         await ctx.bot.send_message(chat, PICK_1, parse_mode="HTML")
-    await asyncio.sleep(3)
-    await ctx.bot.send_message(chat, PICK_2, parse_mode="HTML")
-    await asyncio.sleep(3)
-    await ctx.bot.send_message(chat, PICK_3.replace("{price}", __import__("promo").price(1500)), parse_mode="HTML", reply_markup=kb_pick())
+    # 27.11: без пауз, одним повідомленням
+    await ctx.bot.send_message(chat, PICK_2 + "\n\n" + PICK_3.replace("{price}", __import__("promo").price(1500)), parse_mode="HTML", reply_markup=kb_pick())
 
 
 async def show_disc(ctx, chat, uid):
     crm.log_ev(uid, "vit_disc")
-    await ctx.bot.send_message(chat, DISC_1, parse_mode="HTML")
-    await asyncio.sleep(4)
-    await ctx.bot.send_message(chat, DISC_2, parse_mode="HTML")
+    await ctx.bot.send_message(chat, DISC_1 + "\n\n" + DISC_2, parse_mode="HTML")  # 27.11: без пауз
     for i, (text, url) in enumerate(SHOPS):
-        await asyncio.sleep(2)
         rows = [[B("Перейти", url=url)]]
         if i == len(SHOPS) - 1:
-            rows += [[B("💊 Підбір вітамінів", callback_data="vit:pick")], [B("☰ Меню", callback_data="menu")]]
+            rows += [[B("💊 Підбір вітамінів", callback_data="vit:pick")], [B("💚 Мої послуги", callback_data="menu")]]
         await ctx.bot.send_message(chat, text, parse_mode="HTML", reply_markup=M(rows), disable_web_page_preview=True)
 
 

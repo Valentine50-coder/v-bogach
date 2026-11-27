@@ -34,7 +34,7 @@ TEXT_5 = ("Ось так разом за руку - індивідуально �
 def kb():
     me = C.AUTHOR_CONTACT.lstrip("@")
     return M([[B("Написати", url=f"https://t.me/{me}?text={quote('раціон')}")],
-              [B("☰ Меню", callback_data="menu")]])
+              [B("💚 Мої послуги", callback_data="menu")]])
 
 
 async def show(ctx, chat, uid):
@@ -46,9 +46,5 @@ async def show(ctx, chat, uid):
             await ctx.bot.send_photo(chat, f, caption=TEXT_1, parse_mode="HTML")
     else:
         await ctx.bot.send_message(chat, TEXT_1, parse_mode="HTML")
-    await ctx.bot.send_message(chat, TEXT_2, parse_mode="HTML")
-    await asyncio.sleep(5)
-    await ctx.bot.send_message(chat, TEXT_3, parse_mode="HTML")
-    await ctx.bot.send_message(chat, TEXT_4, parse_mode="HTML")
-    await asyncio.sleep(5)
-    await ctx.bot.send_message(chat, TEXT_5, parse_mode="HTML", reply_markup=kb())
+    # 27.11: без пауз, одним повідомленням
+    await ctx.bot.send_message(chat, "\n\n".join([TEXT_2, TEXT_3, TEXT_4, TEXT_5]), parse_mode="HTML", reply_markup=kb())

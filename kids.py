@@ -50,7 +50,7 @@ def kb_info():  # 26.11 13:29 (Тетяна): як у гайді, кнопка �
 
 
 def kb_ask():
-    return M([[B("Написати", url=f"https://t.me/{C.AUTHOR_CONTACT.lstrip('@')}")], [B("☰ Меню", callback_data="menu")]])
+    return M([[B("Написати", url=f"https://t.me/{C.AUTHOR_CONTACT.lstrip('@')}")], [B("💚 Мої послуги", callback_data="menu")]])
 
 
 async def show(ctx, chat, uid):
@@ -64,7 +64,6 @@ async def show(ctx, chat, uid):
             with open(img, "rb") as f:
                 await ctx.bot.send_photo(chat, f)
         await ctx.bot.send_message(chat, TEXT_1, parse_mode="HTML")
-    await asyncio.sleep(8)
     promo = __import__("promo")  # 27.11: до 31.12 знижка 50% (499,5 замість 999)
     line = (f"<b>До 31 грудня курс (разом із подарунками) зі знижкою 50%: {promo.fmt(PRICE / 2)} грн замість {PRICE} грн</b>❗"
             if promo.on() else f"<b>Наразі цей курс (разом із подарунками) можна придбати всього за {PRICE} грн замість {OLD} грн</b>❗")

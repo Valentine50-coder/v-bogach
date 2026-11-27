@@ -43,7 +43,7 @@ def kb_menu():
     return M([[B("Промокод в СІНЕВО", callback_data="zn:syn")],
               [B("Промокод в ДІЛА", callback_data="zn:dila")],
               [B("Генетичні тести", callback_data="zn:dnk")],
-              [B("☰ Меню", callback_data="menu")]])
+              [B("💚 Мої послуги", callback_data="menu")]])
 
 
 async def _send(ctx, chat, text, photo=None, kb=None):
@@ -64,7 +64,7 @@ async def on_cb(ctx, chat, uid, data):
     crm.log_ev(uid, data)
     if data == "zn:syn":
         await _send(ctx, chat, SYN_1, "synevo.jpg")
-        await _send(ctx, chat, SYN_2, kb=M([[B("перейти на сайт", url=SYNEVO_URL)], [B("☰ Меню", callback_data="menu")]]))
+        await _send(ctx, chat, SYN_2, kb=M([[B("перейти на сайт", url=SYNEVO_URL)], [B("💚 Мої послуги", callback_data="menu")]]))
         # у SendPulse далі пауза 5 с і ще щось (на скріні обрізано): допишемо, коли Тетяна надішле
     elif data == "zn:dila":
         if _img("dila_qr.jpg"):
@@ -74,5 +74,4 @@ async def on_cb(ctx, chat, uid, data):
             await ctx.bot.send_message(chat, DILA, parse_mode="HTML", reply_markup=kb_menu())
     elif data == "zn:dnk":
         await ctx.bot.send_message(chat, DNK_1, parse_mode="HTML", reply_markup=M([[B("ДНК тест", url=DNK_URL)]]))
-        await asyncio.sleep(3)
         await _send(ctx, chat, DNK_2, "dnk_pakety.jpg", kb_menu())

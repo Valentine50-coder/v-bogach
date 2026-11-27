@@ -29,7 +29,7 @@ TEXT_4 = ("4️⃣<b>Глибокий  аналіз стану всього ор
 
 def kb():
     return M([[B("Написати", url=f"{ME}?text={quote('аналізи')}")],
-              [B("☰ Меню", callback_data="menu")]])
+              [B("💚 Мої послуги", callback_data="menu")]])
 
 
 async def show(ctx, chat, uid):
@@ -41,8 +41,6 @@ async def show(ctx, chat, uid):
             await ctx.bot.send_photo(chat, f, caption=TEXT_1, parse_mode="HTML")
     else:
         await ctx.bot.send_message(chat, TEXT_1, parse_mode="HTML")
-    await asyncio.sleep(3)
-    await ctx.bot.send_message(chat, TEXT_2, parse_mode="HTML")
-    await asyncio.sleep(3)
-    await ctx.bot.send_message(chat, TEXT_3, parse_mode="HTML")
-    await ctx.bot.send_message(chat, TEXT_4.replace("{price}", __import__("promo").price(1980)), parse_mode="HTML", reply_markup=kb())
+    # 27.11 (Тетяна): Валентина хоче все одразу, без пауз: решта одним повідомленням
+    rest = "\n\n".join([TEXT_2, TEXT_3, TEXT_4.replace("{price}", __import__("promo").price(1980))])
+    await ctx.bot.send_message(chat, rest, parse_mode="HTML", reply_markup=kb())
