@@ -23,7 +23,15 @@ def dark(th, k, n, h, paras, pic=None, pos="center"):
 <h1 style="font-size:104px;color:#fff">{h}</h1><div style="margin-top:44px">{ps}</div></div>{ph}""", "cta")
 
 
+_VAL5 = iter(["g-002.jpg", "g-035.jpg", "g-001.jpg", "advent/xmas_cons.jpg", "g-049.jpg", "g-000.jpg", "advent/invite.jpg", "guide_solodke.jpg"] * 30)
+_POS5 = {"g-035.jpg": "center 20%", "g-002.jpg": "center 30%", "advent/xmas_cons.jpg": "center 25%", "g-049.jpg": "center 25%",
+         "g-001.jpg": "center 30%", "advent/invite.jpg": "center 20%", "g-000.jpg": "center 15%", "guide_solodke.jpg": "center 20%"}
+
+
 def ctap(th, k, n, h, paras, w, style, after, pic=None, pos="top"):
+    if pic is None:  # 27.11: CTA завжди з фото Валентини, щоб слайд був заповнений
+        pic = next(_VAL5)
+        pos = _POS5[pic]
     ph = f'<div class="ph" style="right:56px;top:110px;width:380px;height:500px"><img src="{img(pic)}" style="object-position:{pos}"></div>' if pic else ""
     wid = "width:560px" if pic else "right:70px"
     ps = "".join(f'<div class="p" style="color:#e6ebff">{p}</div>' for p in paras)

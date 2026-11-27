@@ -10,10 +10,10 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from plan2 import page, top, img, OUT  # noqa: E402
 from plan3 import photo, split  # noqa: E402
-from plan5 import cov, dark, ctap, rule, txtb  # noqa: E402
+from plan5 import cov, dark, rule, txtb  # noqa: E402
 from plan6 import txt, endsub, card_cover, steps  # noqa: E402
 from plan7 import two, typo, zal2, zal3, review, quoteph, big  # noqa: E402
-from plan8 import myth_cover, rec, D50  # noqa: E402
+from plan8 import myth_cover, rec, D50, ctap  # noqa: E402
 from playwright.sync_api import sync_playwright  # noqa: E402
 
 # ===== i1 · 18.12 9:00 · 💥 міф =====

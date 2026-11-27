@@ -9,10 +9,24 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from plan2 import page, top, img, OUT  # noqa: E402
 from plan3 import photo, split  # noqa: E402
-from plan5 import cov, dark, ctap, rule, txtb  # noqa: E402
+from plan5 import cov, dark, rule, txtb  # noqa: E402
+from plan5 import ctap as _ctap  # noqa: E402
 from plan6 import txt, endsub, card_cover, recipe, steps  # noqa: E402
 from plan7 import two, typo, zal2, zal3, review, quoteph, big  # noqa: E402
 from playwright.sync_api import sync_playwright  # noqa: E402
+
+_VAL = iter(["g-035.jpg", "g-002.jpg", "advent/xmas_cons.jpg", "g-049.jpg", "g-001.jpg", "advent/invite.jpg", "g-000.jpg", "guide_solodke.jpg"] * 20)
+_POS = {"g-035.jpg": "center 20%", "g-002.jpg": "center 30%", "advent/xmas_cons.jpg": "center 25%", "g-049.jpg": "center 25%",
+        "g-001.jpg": "center 30%", "advent/invite.jpg": "center 20%", "g-000.jpg": "center 15%", "guide_solodke.jpg": "center 20%"}
+
+
+def ctap(th, k, n, h, paras, w, style, after, pic=None, pos="top"):
+    """CTA завжди з фото Валентини, щоб слайд був заповнений (27.11)."""
+    if pic is None:
+        pic = next(_VAL)
+        pos = _POS[pic]
+    return _ctap(th, k, n, h, paras, w, style, after, pic, pos)
+
 
 D50 = "<b style=\"color:#fff\">До 31 грудня знижка 50%.</b> Щоб дізнатися подробиці,"
 
