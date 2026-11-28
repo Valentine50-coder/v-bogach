@@ -206,6 +206,10 @@ F7 = [
 SETS = {"f1": F1, "f2": F2, "f3": F3, "f4": F4, "f5": F5, "f6": F6, "f7": F7}
 
 
+
+import extra  # noqa: E402
+SETS = extra.patch(SETS)  # 28.11: доповнення (extra_data.py)
+
 def build(keys):
     with sync_playwright() as p:
         b = p.chromium.launch()

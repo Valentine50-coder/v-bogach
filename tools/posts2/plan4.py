@@ -113,6 +113,10 @@ E2 = [
 SETS = {"e1": E1, "e2": E2}
 
 
+
+import extra  # noqa: E402
+SETS = extra.patch(SETS)  # 28.11: доповнення (extra_data.py)
+
 def build(keys):
     with sync_playwright() as p:
         b = p.chromium.launch()

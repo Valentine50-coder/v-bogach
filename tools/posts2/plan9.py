@@ -369,6 +369,10 @@ CAPS = [
 ITEMS = CAPS
 
 
+
+import extra  # noqa: E402
+SETS = extra.patch(SETS)  # 28.11: доповнення (extra_data.py)
+
 def build(keys):
     with sync_playwright() as p:
         b = p.chromium.launch()

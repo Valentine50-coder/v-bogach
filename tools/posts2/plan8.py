@@ -314,6 +314,10 @@ H14 = [
 SETS = {"h1": H1, "h2": H2, "h3": H3, "h4": H4, "h5": H5, "h6": H6, "h7": H7, "h8": H8, "h9": H9, "h10": H10, "h11": H11, "h12": H12, "h13": H13, "h14": H14}
 
 
+
+import extra  # noqa: E402
+SETS = extra.patch(SETS)  # 28.11: доповнення (extra_data.py)
+
 def build(keys):
     with sync_playwright() as p:
         b = p.chromium.launch()

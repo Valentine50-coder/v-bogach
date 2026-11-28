@@ -303,6 +303,10 @@ G12 = [
 SETS = {"g1": G1, "g2": G2, "g3": G3, "g4": G4, "g5": G5, "g6": G6, "g7": G7, "g8": G8, "g9": G9, "g10": G10, "g11": G11, "g12": G12}
 
 
+
+import extra  # noqa: E402
+SETS = extra.patch(SETS)  # 28.11: доповнення (extra_data.py)
+
 def build(keys):
     with sync_playwright() as p:
         b = p.chromium.launch()
