@@ -705,6 +705,7 @@ def main():
         paid_fn=lambda uid: bool((db.get_user(uid) or {"int_paid": 0})["int_paid"]),
         parts_fn=lambda uid: (db.flag_get(f"inst:{uid}") or "done") != "done")
     app = Application.builder().token(C.BOT_TOKEN).post_init(post_init).build()
+    app.add_handler(CommandHandler("karuseli", __import__("gallery2811").cmd))  # 28.11: сторінка всіх каруселей
     app.add_handler(CommandHandler("start", start, filters=filters.ChatType.PRIVATE))
     app.add_handler(CommandHandler("menu", cmd_menu, filters=filters.ChatType.PRIVATE))
     app.add_handler(CommandHandler("stats", cmd_stats))
@@ -735,7 +736,8 @@ def main():
     app.job_queue.run_once(__import__("advent").preview_job, when=100)  # 26.11: прев'ю запрошення в адвент адмінам
     app.job_queue.run_once(__import__("vadsetup").job, when=150)  # 23.11: як підключити рекламу (flag vads_2311)
     app.job_queue.run_once(__import__("payinfo2711").job, when=120)  # 27.11: Валентині як оплачуються продукти
-    app.job_queue.run_once(__import__("advnote2711").job, when=90)  # 27.11: Валентині що змінилось в адвенті + посилання
+    app.job_queue.run_once(__import__("advnote2711").job, when=90)
+    app.job_queue.run_once(__import__("gallery2811").job, when=100)  # 28.11: Валентині кнопка на всі каруселі  # 27.11: Валентині що змінилось в адвенті + посилання
     app.job_queue.run_once(__import__("links2711").job, when=150)  # 27.11: посилання кодових слів після звіту
     app.job_queue.run_once(__import__("vadsetup").note_job, when=200)  # 23.11: кабінет налаштовує Тетяна (flag vads_note)
     app.job_queue.run_once(jan.setup_job, when=70)  # 19.11: питання Валентині (ціна консультації, старт, доплата)
