@@ -745,6 +745,7 @@ def main():
     app.job_queue.run_repeating(install_job, interval=3600, first=120)
     app.job_queue.run_once(__import__("instaposts").intro_job, when=60)  # 14.11: каруселі для Instagram, перша одразу
     app.job_queue.run_repeating(__import__("instaposts").job, interval=300, first=200)  # 14.11: щодня о 9:00 до 18.11
+    app.job_queue.run_once(__import__("instaposts").fix_e2_job, when=100)  # 28.11: нова версія поста «Миколай» (6 слайдів)
     app.job_queue.run_once(__import__("instaposts").fix_k2_job, when=90)  # 15.11: дослати опис до каруселі k2
     app.job_queue.run_once(__import__("instaposts").fix_k6_job, when=30)  # 18.11: виправлене фото в k6, якщо стара вже пішла
     app.job_queue.run_repeating(__import__("dozhim").job, interval=300, first=180)  # 13.11: дожими інтенсиву (dozhim.py)

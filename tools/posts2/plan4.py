@@ -56,36 +56,57 @@ E1 = [
 </div>"""),
 ]
 
+N6 = 6
+# 28.11 (Тетяна): стара версія на 4 слайди обіцяла «в кінці покажу», а давала лише назви. Тепер 6 слайдів: кожна заміна з рецептом.
 E2 = [
-    page("green", f"""<div class="full"><img src="{img('g-090.jpg')}" style="object-position:center"></div><div class="shade-b"></div>{top(1, N4, True)}
+    page("green", f"""<div class="full"><img src="{img('g-090.jpg')}" style="object-position:center"></div><div class="shade-b"></div>{top(1, N6, True)}
 <div style="position:absolute;left:56px;right:56px;bottom:330px;color:#fff">
   <h1 style="font-size:100px">Миколай знову несе три кульки цукерок? 🍬</h1>
 </div>"""),
-    page("green", f"""{top(2, N4)}
-<div style="position:absolute;left:70px;right:70px;top:110px">
-  <div class="p" style="font-size:33px"><i>Дочитайте: в кінці покажу, що покласти замість цукерок.</i></div>
-  <div class="p" style="margin-top:22px">У багатьох щороку однаково: дитина радіє п'ять хвилин, а потім цілий вечір скаче по стінах і не може заснути. Цього року під подушку можна покласти інше, і це теж буде свято:</div>
+    page("green", f"""{top(2, N6)}
+<div style="position:absolute;left:70px;right:70px;top:120px">
+  <span class="pl">ЗНАЙОМО?</span>
+  <div class="p" style="font-size:35px;margin-top:30px">Дитина радіє п'ять хвилин, а потім цілий вечір скаче по стінах, вередує і не може заснути. А зранку ще й просить «ще одну цукерочку».</div>
+  <div class="p" style="font-size:35px">Цього року під подушку можна покласти інше, і це <b>теж буде свято</b>: солодке, смачне і таке, що дитина з'їсть із задоволенням.</div>
+  <div class="p" style="font-size:35px"><i>Ось 4 смаколики, які я раджу мамам. Зберігайте, щоб не шукати 6 грудня 👇</i></div>
 </div>
-<div style="position:absolute;left:70px;right:70px;top:560px;display:grid;grid-template-columns:1fr 1fr;gap:20px">
-  <div class="card" style="padding:0;overflow:hidden"><img src="{img('g-097.jpg')}" style="width:100%;height:230px;object-fit:cover"><div class="p" style="padding:18px 24px;font-size:28px"><b>Печені яблука</b> з корицею</div></div>
-  <div class="card" style="padding:0;overflow:hidden"><img src="{img('g-100.jpg')}" style="width:100%;height:230px;object-fit:cover"><div class="p" style="padding:18px 24px;font-size:28px"><b>Ягоди</b> з йогуртом</div></div>
-  <div class="card" style="padding:0;overflow:hidden"><img src="{img('g-099.jpg')}" style="width:100%;height:230px;object-fit:cover"><div class="p" style="padding:18px 24px;font-size:28px"><b>Кульки</b> з фініків і горіхів</div></div>
-  <div class="card" style="padding:0;overflow:hidden"><img src="{img('g-096.jpg')}" style="width:100%;height:230px;object-fit:cover;object-position:center"><div class="p" style="padding:18px 24px;font-size:28px"><b>Темний шоколад</b> 70-85%</div></div>
+<div class="ph" style="left:70px;right:70px;bottom:70px;height:470px"><img src="{img('g-101.jpg')}" style="object-position:center"></div>"""),
+    page("green", f"""{top(3, N6)}
+<div class="ph" style="left:70px;right:70px;top:110px;height:560px"><img src="{img('g-097.jpg')}" style="object-position:center"></div>
+<div style="position:absolute;left:70px;right:70px;top:720px">
+  <span class="pl">1 · ПЕЧЕНІ ЯБЛУКА З КОРИЦЕЮ</span>
+  <div class="p" style="font-size:35px;margin-top:26px">Вийміть серцевину, всередину покладіть ложку кисломолочного сиру або дрібно порубаних горіхів, щіпку кориці. <b>20 хвилин у духовці</b>, і весь дім пахне святом.</div>
+  <div class="p" style="font-size:35px">Солодко без цукру: яблуко віддає свій смак саме, а кориця робить його схожим на десерт.</div>
+  <div class="p" style="font-size:35px">Так само можна запекти грушу. <i>Подавайте теплими, з ложкою йогурту зверху: дитина точно попросить добавки.</i></div>
 </div>"""),
-    page("green", f"""<div class="full"><img src="{img('g-101.jpg')}" style="object-position:center"></div><div class="shade"></div>{top(3, N4, True)}
-<div style="position:absolute;left:70px;right:70px;top:300px" class="card">
-  <div class="quote" style="font-size:50px">Що кладемо під подушку, з тим дитина і прокидається</div>
-  <div class="p" style="margin-top:26px">З тарілкою так само, тільки щодня. Що лежить у ній сьогодні, з тим здоров'ям дитина і виростає. Одна цукерка на Миколая нічого не зламає. Але <b>365 днів «ну хоч щось поїла»</b> складаються в імунітет, сон, шкіру й настрій.</div>
+    page("green", f"""{top(4, N6)}
+<div style="position:absolute;left:70px;right:70px;top:120px">
+  <span class="pl">2 · КУЛЬКИ З ФІНІКІВ І ГОРІХІВ</span>
+  <div class="p" style="font-size:35px;margin-top:26px">Фініки без кісточок, жменя горіхів і ложка какао в блендер. Скачайте кульки і обваляйте в кокосовій стружці. <b>Зберігайте в холодильнику</b>, так вони тримають форму.</div>
+  <div class="p" style="font-size:35px">А ще краще ліпити їх разом з дитиною: це вже окрема святкова розвага, і з'їсть вона своє «творіння» з гордістю 😉</div>
+</div>
+<div class="ph" style="left:70px;right:70px;bottom:70px;height:520px"><img src="{img('g-099.jpg')}" style="object-position:center"></div>"""),
+    page("green", f"""{top(5, N6)}
+<div style="position:absolute;left:70px;right:70px;top:110px;display:grid;grid-template-columns:1fr 1fr;gap:22px">
+  <div class="card" style="padding:0;overflow:hidden"><img src="{img('g-098.jpg')}" style="width:100%;height:420px;object-fit:cover"></div>
+  <div class="card" style="padding:0;overflow:hidden"><img src="{img('g-096.jpg')}" style="width:100%;height:420px;object-fit:cover"></div>
+</div>
+<div style="position:absolute;left:70px;right:70px;top:600px">
+  <span class="pl">3 · ЯГОДИ З ЙОГУРТОМ</span>
+  <div class="p" style="font-size:35px;margin-top:22px">Натуральний йогурт <b>без цукру</b>, ягоди (можна заморожені) і зверху трохи гранол. Подайте в гарній склянці шарами, і це вже десерт.</div>
+  <span class="pl" style="margin-top:18px;display:inline-block">4 · ТЕМНИЙ ШОКОЛАД 70-85%</span>
+  <div class="p" style="font-size:35px;margin-top:22px">Два-три квадратики, і краще вдень, а не перед сном: так солодке не заважатиме дитині заснути.</div>
+  <div class="p" style="font-size:35px;margin-top:26px"><i>А поруч зі смаколиками покладіть книжку чи теплі шкарпетки з оленями: свято не тільки в їжі</i> 😉</div>
 </div>"""),
-    page("green", f"""{top(4, N4, True)}
-<div class="ph" style="right:56px;top:120px;width:400px;height:560px"><img src="{img('g-000.jpg')}" style="object-position:top"></div>
+    page("green", f"""{top(6, N6, True)}
+<div class="ph" style="right:56px;top:120px;width:400px;height:520px"><img src="{img('g-000.jpg')}" style="object-position:top"></div>
 <div style="position:absolute;left:70px;width:520px;top:150px">
-  <h2 style="font-size:56px;color:#fff">Як скласти дитині тарілку <i class="s">без заборон і сліз?</i></h2>
+  <div class="quote" style="font-size:46px;color:#fff">Що кладемо під подушку, з тим дитина і прокидається</div>
 </div>
-<div style="position:absolute;left:70px;right:70px;top:730px">
-  <div class="p" style="color:#e3f3e8">Усе це в моєму мінікурсі <b style="color:#fff">«7 кроків до хронічного здоров'я вашої дитини»</b>: 5 відеолекцій, гайд «45 найкорисніших продуктів для дітей», 50 рецептів і шпаргалка найшкідливіших Е-добавок.</div>
-  <div class="p" style="color:#fff;margin-top:26px"><b>До 31 грудня знижка 50%.</b> Щоб забрати, напишіть у коментарях</div>
-  <div style="margin-top:22px">{word('note', 'ДІТИ')}</div>
+<div style="position:absolute;left:70px;right:70px;top:690px">
+  <div class="p" style="font-size:35px;color:#e3f3e8">З тарілкою так само, тільки щодня. Як скласти дитині тарілку <b style="color:#fff">без заборон і сліз</b>, я розповідаю в мінікурсі «7 кроків до хронічного здоров'я вашої дитини»: 5 відеолекцій, гайд «45 найкорисніших продуктів для дітей», 50 рецептів.</div>
+  <div class="p" style="font-size:35px;color:#fff;margin-top:22px"><b>До 31 грудня знижка 50%.</b> Щоб дізнатися подробиці, напишіть у коментарях</div>
+  <div style="margin-top:18px">{word('note', 'ДІТИ')}</div>
 </div>""", "cta"),
 ]
 
